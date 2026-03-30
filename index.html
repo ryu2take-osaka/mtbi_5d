@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MBTI 5D Visualizer (Interactive Engine)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #050510;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        #ui-panel {
+            position: relative;
+            width: 100%;
+            background: rgba(10, 10, 15, 1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            box-sizing: border-box;
+            padding: 20px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        #header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        #header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        #header p {
+            margin: 5px 0 0;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .main-ui {
+            display: flex;
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .controls-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            padding: 8px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .tab.active {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+            color: #fff;
+        }
+
+        .sliders {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .slider-label {
+            width: 150px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 0.5px;
+        }
+
+        .slider-wrapper {
+            position: relative;
+            flex: 1;
+            height: 24px;
+            display: flex;
+            align-items: center;
+        }
+
+        .ticks {
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .tick-mark {
+            width: 2px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 1px;
+        }
+
+        input[type=range] {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            margin: 0;
+            height: 8px; /* Make the input the height of the track */
+            border-radius: 4px;
+            /* Linear gradient directly on input for reliable CSS var usage */
+            background: linear-gradient(to right, var(--track-color, #ccc) 0%, var(--track-color, #ccc) var(--val, 50%), rgba(255, 255, 255, 0.15) var(--val, 50%), rgba(255, 255, 255, 0.15) 100%);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: transparent;
+            border: none;
+        }
+
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            background: transparent;
+            border: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #fff;
+            margin-top: -6px; /* Center thumb over 8px track (20-8)/2 = 6 */
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            border: 2px solid var(--track-color, #ccc);
+        }
+
+        input[type=range]::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            border: 2px solid var(--track-color, #ccc);
+        }
+        
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        .slider-val {
+            display: none; /* Hide the simple value display */
+        }
+        
+        .bold {
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .info-area {
+            width: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-left: 1px solid rgba(255, 255, 255, 0.15);
+            padding-left: 30px;
+        }
+
+        .info-title {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 10px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .rank-badge {
+            font-size: 28px;
+            font-weight: 800;
+            padding: 4px 20px;
+            border-radius: 8px;
+            text-shadow: 0 0 10px currentColor;
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        .share-btn {
+            margin-top: 15px;
+            padding: 10px 24px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 20px;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .share-btn:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        .share-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: #000;
+        }
+
+        @media (max-width: 768px) {
+            .main-ui {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .info-area {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid rgba(255, 255, 255, 0.15);
+                padding-left: 0;
+                padding-top: 20px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-around;
+            }
+            .score-container, .rank-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .share-btn {
+                margin-top: 20px;
+                width: 80%;
+                justify-content: center;
+            }
+            #header { display: none; }
+        }
+    </style>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div id="header">
+        <h1>MBTI 5D Visualizer</h1>
+        <p>性格を「座標・光・密度」として体験する</p>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div id="ui-panel">
+        <div class="main-ui">
+            <div class="controls-area">
+                <div class="tabs">
+                    <div class="tab active" data-target="A" id="tab-A">User A <span class="mbti-type"></span></div>
+                    <div class="tab" data-target="B" id="tab-B">User B <span class="mbti-type"></span></div>
+                </div>
+
+                <div class="sliders">
+                    <div class="slider-row color-EI" style="--track-color: #4298B4; --val: 50%;">
+                        <div class="slider-label"><span id="lbl-EI-L">外向型</span><span id="lbl-EI-R">内向型</span></div>
+                        <div class="slider-wrapper">
+                            <div class="ticks" id="ticks-EI"></div>
+                            <input type="range" id="slider-EI" min="0" max="100" step="1" value="50">
+                        </div>
+                    </div>
+                    <div class="slider-row color-NS" style="--track-color: #E4AE3A; --val: 50%;">
+                        <div class="slider-label"><span id="lbl-NS-L">直感型</span><span id="lbl-NS-R">現実型</span></div>
+                        <div class="slider-wrapper">
+                            <div class="ticks" id="ticks-NS"></div>
+                            <input type="range" id="slider-NS" min="0" max="100" step="1" value="50">
+                        </div>
+                    </div>
+                    <div class="slider-row color-TF" style="--track-color: #33A474; --val: 50%;">
+                        <div class="slider-label"><span id="lbl-TF-L">思考型</span><span id="lbl-TF-R">感情型</span></div>
+                        <div class="slider-wrapper">
+                            <div class="ticks" id="ticks-TF"></div>
+                            <input type="range" id="slider-TF" min="0" max="100" step="1" value="50">
+                        </div>
+                    </div>
+                    <div class="slider-row color-JP" style="--track-color: #8A61A6; --val: 50%;">
+                        <div class="slider-label"><span id="lbl-JP-L">計画型</span><span id="lbl-JP-R">探索型</span></div>
+                        <div class="slider-wrapper">
+                            <div class="ticks" id="ticks-JP"></div>
+                            <input type="range" id="slider-JP" min="0" max="100" step="1" value="50">
+                        </div>
+                    </div>
+                    <div class="slider-row color-AT" style="--track-color: #E46562; --val: 50%;">
+                        <div class="slider-label"><span id="lbl-AT-L">自己主張型</span><span id="lbl-AT-R">激動型</span></div>
+                        <div class="slider-wrapper">
+                            <div class="ticks" id="ticks-AT"></div>
+                            <input type="range" id="slider-AT" min="0" max="100" step="1" value="50">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-area">
+                <div class="score-container">
+                    <div class="info-title">Distance Score</div>
+                    <div class="score-value" id="score-display">1.00</div>
+                </div>
+                <div class="rank-container">
+                    <div class="info-title">Compatibility</div>
+                    <div class="rank-badge" id="rank-display" style="color: #fff;">S</div>
+                </div>
+                <button class="share-btn" id="share-x-btn">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.007 4.126H5.078z"></path></svg>
+                    ポストする
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+        // --- State ---
+        const state = {
+            activeUser: 'A',
+            users: {
+                A: { EI: 50, NS: 50, TF: 50, JP: 50, AT: 50 },
+                B: { EI: 50, NS: 50, TF: 50, JP: 50, AT: 50 }
+            }
+        };
+
+        // Base64 Binary Parameter Handling
+        function decodeStateFromBase64(b64) {
+            try {
+                const str = atob(b64);
+                if (str.length !== 10) return;
+                
+                const arr = new Uint8Array(10);
+                for(let i = 0; i < 10; i++) {
+                    const val = str.charCodeAt(i);
+                    // Invalid detection
+                    if (val < 0 || val > 100 || isNaN(val)) return;
+                    arr[i] = val;
+                }
+                
+                const keys = ['EI', 'NS', 'TF', 'JP', 'AT'];
+                keys.forEach((k, i) => {
+                    state.users.A[k] = arr[i];
+                    state.users.B[k] = arr[i+5];
+                });
+            } catch(e) {
+                // Ignore decoding errs and fallback to init state
+            }
+        }
+
+        function encodeStateToBase64() {
+            const keys = ['EI', 'NS', 'TF', 'JP', 'AT'];
+            const arr = new Uint8Array(10);
+            keys.forEach((k, i) => {
+                arr[i] = state.users.A[k];
+                arr[i+5] = state.users.B[k];
+            });
+            // Convert to base64 via string
+            return btoa(String.fromCharCode.apply(null, arr));
+        }
+
+        // Apply URL parameters if exist
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('d')) {
+            decodeStateFromBase64(params.get('d'));
+        }
+
+        // UI Elements
+        const tabs = document.querySelectorAll('.tab');
+        const sliders = {
+            EI: document.getElementById('slider-EI'),
+            NS: document.getElementById('slider-NS'),
+            TF: document.getElementById('slider-TF'),
+            JP: document.getElementById('slider-JP'),
+            AT: document.getElementById('slider-AT')
+        };
+        const labels = {
+            EI: { L: document.getElementById('lbl-EI-L'), R: document.getElementById('lbl-EI-R'), txtL: '外向型', txtR: '内向型' },
+            NS: { L: document.getElementById('lbl-NS-L'), R: document.getElementById('lbl-NS-R'), txtL: '直感型', txtR: '現実型' },
+            TF: { L: document.getElementById('lbl-TF-L'), R: document.getElementById('lbl-TF-R'), txtL: '思考型', txtR: '感情型' },
+            JP: { L: document.getElementById('lbl-JP-L'), R: document.getElementById('lbl-JP-R'), txtL: '計画型', txtR: '探索型' },
+            AT: { L: document.getElementById('lbl-AT-L'), R: document.getElementById('lbl-AT-R'), txtL: '自己主張型', txtR: '激動型' }
+        };
+
+        const scoreDisplay = document.getElementById('score-display');
+        const rankDisplay = document.getElementById('rank-display');
+
+        // Initialize Ticks
+        const tickKeys = ['EI', 'NS', 'TF', 'JP', 'AT'];
+        tickKeys.forEach(key => {
+            const container = document.getElementById('ticks-' + key);
+            for (let i = 0; i <= 10; i++) {
+                const tick = document.createElement('div');
+                tick.className = 'tick-mark';
+                container.appendChild(tick);
+            }
+        });
+
+        // Update UI based on active user
+        function refreshUI() {
+            const data = state.users[state.activeUser];
+            Object.keys(sliders).forEach(key => {
+                const val = data[key];
+                sliders[key].value = val;
+                sliders[key].parentElement.parentElement.style.setProperty('--val', val + '%');
+                updateLabel(key, val);
+            });
+        }
+
+        // Update labels text and bold styling based on value
+        function updateLabel(key, val) {
+            const l = labels[key].L;
+            const r = labels[key].R;
+            const txtL = labels[key].txtL;
+            const txtR = labels[key].txtR;
+            
+            l.className = '';
+            r.className = '';
+            
+            if (val < 50) {
+                l.classList.add('bold');
+                l.textContent = (100 - val) + '% ' + txtL;
+                r.textContent = txtR;
+            } else if (val > 50) {
+                r.classList.add('bold');
+                l.textContent = txtL;
+                r.textContent = val + '% ' + txtR;
+            } else {
+                l.textContent = txtL;
+                r.textContent = txtR;
+            }
+        }
+
+        // Handle tab clicks
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                state.activeUser = tab.getAttribute('data-target');
+                refreshUI();
+            });
+        });
+
+        // Handle slider changes
+        Object.keys(sliders).forEach(key => {
+            sliders[key].addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                state.users[state.activeUser][key] = val;
+                e.target.parentElement.parentElement.style.setProperty('--val', val + '%');
+                updateLabel(key, val);
+                updateVisuals();
+            });
+        });
+
+        // Share to X
+        document.getElementById('share-x-btn').addEventListener('click', () => {
+            const b64 = encodeStateToBase64();
+            const baseUrl = window.location.origin + window.location.pathname;
+            const url = `${baseUrl}?d=${encodeURIComponent(b64)}`;
+            const text = "2人のMBTI診断結果の近さを見るツール MBTI 5D Visualizer\n\n今回の結果はこちら\n" + url;
+            
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+        });
+
+        refreshUI();
+
+        // --- Three.js Setup ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050510, 0.05);
+
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+        camera.position.set(0, 0, 15);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
+        // Performance limiters for mobile
+        const pixelRatio = Math.min(window.devicePixelRatio, 1.5);
+        renderer.setPixelRatio(pixelRatio);
+        renderer.setSize(width, height);
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = false;
+
+        // Post Processing (Bloom)
+        const renderScene = new RenderPass(scene, camera);
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), 1.5, 0.4, 0.85);
+        bloomPass.threshold = 0.1;
+        bloomPass.strength = 1.2; // Adjusted dynamically
+        bloomPass.radius = 0.8;
+
+        const composer = new EffectComposer(renderer);
+        composer.addPass(renderScene);
+        composer.addPass(bloomPass);
+
+        // --- Visual Elements ---
+        
+        // MBTI Type logic
+        function getMBTITypeString(data) {
+            if (data.EI === 50 && data.NS === 50 && data.TF === 50 && data.JP === 50 && data.AT === 50) return "XXXX-X";
+            const e = data.EI < 50 ? 'E' : (data.EI > 50 ? 'I' : 'X');
+            const n = data.NS < 50 ? 'N' : (data.NS > 50 ? 'S' : 'X');
+            const t = data.TF < 50 ? 'T' : (data.TF > 50 ? 'F' : 'X');
+            const j = data.JP < 50 ? 'J' : (data.JP > 50 ? 'P' : 'X');
+            const a = data.AT < 50 ? 'A' : (data.AT > 50 ? 'T' : 'X');
+            return `${e}${n}${t}${j}-${a}`;
+        }
+
+        const SCALE = 4.0;
+        const BOX_SIZE = SCALE * 2;
+        
+        // 3D Matrix / Grids mapping corners (Floor, Left Wall, Right Wall)
+        const gridColorLine = 0x555566;
+        const gridColorBg = 0x222233;
+
+        // XZ Plane (Floor)
+        const gridXZ = new THREE.GridHelper(BOX_SIZE, 10, gridColorLine, gridColorBg);
+        gridXZ.position.set(0, -SCALE, 0);
+        scene.add(gridXZ);
+
+        // XY Plane (Back wall)
+        const gridXY = new THREE.GridHelper(BOX_SIZE, 10, gridColorLine, gridColorBg);
+        gridXY.rotation.x = Math.PI / 2;
+        gridXY.position.set(0, 0, -SCALE);
+        scene.add(gridXY);
+
+        // YZ Plane (Side wall)
+        const gridYZ = new THREE.GridHelper(BOX_SIZE, 10, gridColorLine, gridColorBg);
+        gridYZ.rotation.z = Math.PI / 2;
+        gridYZ.position.set(-SCALE, 0, 0);
+        scene.add(gridYZ);
+
+        // Axes Helper starting at the corner instead of origin
+        const axesHelper = new THREE.AxesHelper(BOX_SIZE);
+        axesHelper.position.set(-SCALE, -SCALE, -SCALE);
+        axesHelper.setColors(0xdddddd, 0xdddddd, 0xdddddd);
+        scene.add(axesHelper);
+
+        // Group colors
+        const groupColors = {
+            NT: new THREE.Color('#9b59b6'), // 紫
+            NF: new THREE.Color('#2ecc71'), // 緑
+            SJ: new THREE.Color('#3498db'), // 青
+            SP: new THREE.Color('#f1c40f')  // 黄
+        };
+
+        // Determine group color based on N-S, T-F, J-P scores (0-100)
+        function getGroupColor(ns, tf, jp) {
+            // N is on the left (0), S is on the right (100)
+            const isN = ns < 50;
+            // T is on the left (0), F is on the right (100)
+            const isT = tf < 50;
+            // J is on the left (0), P is on the right (100)
+            const isJ = jp < 50;
+
+            if (isN && isT) return groupColors.NT;
+            if (isN && !isT) return groupColors.NF;
+            if (!isN && isJ) return groupColors.SJ;
+            if (!isN && !isJ) return groupColors.SP;
+
+            return new THREE.Color('#ffffff');
+        }
+
+        // Spheres creation (mobile optimization: 16, 16 segments)
+        const sphereGeo = new THREE.SphereGeometry(1, 16, 16);
+        
+        const createSphereMat = () => new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            emissive: 0xffffff,
+            emissiveIntensity: 0.5,
+            roughness: 0.2,
+            metalness: 0.8
+        });
+
+        const sphereA = new THREE.Mesh(sphereGeo, createSphereMat());
+        const sphereB = new THREE.Mesh(sphereGeo, createSphereMat());
+        scene.add(sphereA);
+        scene.add(sphereB);
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        dirLight.position.set(10, 10, 10);
+        scene.add(dirLight);
+
+        // Connecting Line
+        const lineMat = new THREE.LineBasicMaterial({ 
+            color: 0xffffff, 
+            transparent: true, 
+            opacity: 0.5,
+            blending: THREE.AdditiveBlending 
+        });
+        const lineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+        const line = new THREE.Line(lineGeo, lineMat);
+        scene.add(line);
+
+        function updateVisuals() {
+            const uA = state.users.A;
+            const uB = state.users.B;
+
+            // Check if all values are 50
+            const isAllFifty = (data) => 
+                data.EI === 50 && data.NS === 50 && data.TF === 50 && data.JP === 50 && data.AT === 50;
+
+            sphereA.visible = !isAllFifty(uA);
+            sphereB.visible = !isAllFifty(uB);
+            line.visible = sphereA.visible && sphereB.visible;
+
+            // Update tab texts
+            document.getElementById('tab-A').querySelector('.mbti-type').textContent = `(${getMBTITypeString(uA)})`;
+            document.getElementById('tab-B').querySelector('.mbti-type').textContent = `(${getMBTITypeString(uB)})`;
+
+            // 1. Position mapping: (Value - 50) / 50 => -1.0 ~ 1.0, then scale
+            const getPos = (data) => new THREE.Vector3(
+                ((data.NS - 50) / 50) * SCALE, // X: N-S
+                ((data.TF - 50) / 50) * SCALE, // Y: T-F
+                ((data.JP - 50) / 50) * SCALE  // Z: J-P
+            );
+
+            sphereA.position.copy(getPos(uA));
+            sphereB.position.copy(getPos(uB));
+
+            // Line update
+            lineGeo.setFromPoints([sphereA.position, sphereB.position]);
+
+            // 2. Looks mapping
+            const applyLooks = (mesh, data) => {
+                // Glow (E-I): 0 is E (max glow), 100 is I (min glow)
+                const glow = (100 - data.EI) / 100;
+                const emissiveIntensity = 0.3 + glow * 2.0;
+
+                // Color
+                const col = getGroupColor(data.NS, data.TF, data.JP);
+
+                // Size (A-T): smaller AT is more assertive (bigger/denser). 
+                // Scaled down: Min size 0.6, Max size 0.9 (150% ratio)
+                const minSize = 0.6;
+                const maxSize = 0.9;
+                const size = minSize + ((100 - data.AT) / 100) * (maxSize - minSize); 
+
+                mesh.scale.setScalar(size);
+                mesh.material.color.copy(col).multiplyScalar(0.2); // Base reflection
+                mesh.material.emissive.copy(col);
+                mesh.material.emissiveIntensity = emissiveIntensity;
+            };
+
+            applyLooks(sphereA, uA);
+            applyLooks(sphereB, uB);
+
+            // 3. Logic & Compatibility
+            // Distance between normalized coords (-1 to 1 means max distance per axis is 2)
+            // Normalized positions distance = dist / SCALE
+            const distance = sphereA.position.distanceTo(sphereB.position) / SCALE; 
+            
+            // Score = 1 - (D/3)  -- based on spec
+            let score = 1.0 - (distance / 3.0);
+            score = Math.max(0, Math.min(1, score));
+
+            // Line opacity based on real distance to make it fade
+            lineMat.opacity = Math.max(0.1, 1.0 - (distance * 0.3));
+
+            // Update DOM Info
+            scoreDisplay.textContent = score.toFixed(2);
+
+            let rank = 'D';
+            let rankColor = '#e74c3c'; // Red
+            if (score >= 0.8) {
+                rank = 'S'; rankColor = '#FFD700'; // Gold
+            } else if (score >= 0.6) {
+                rank = 'A'; rankColor = '#2ecc71'; // Green
+            } else if (score >= 0.4) {
+                rank = 'B'; rankColor = '#3498db'; // Blue
+            } else if (score >= 0.2) {
+                rank = 'C'; rankColor = '#e67e22'; // Orange
+            }
+
+            rankDisplay.textContent = rank;
+            rankDisplay.style.color = rankColor;
+            
+            // Adjust bloom based on average E-I globally (optional juicy effect)
+            const avgGlow = ((100 - uA.EI)/100 + (100 - uB.EI)/100) / 2;
+            bloomPass.strength = 0.5 + avgGlow * 1.5;
+        }
+
+        // Window resize handler
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+            composer.setSize(width, height);
+        }
+
+        // Render loop
+        function animate() {
+            requestAnimationFrame(animate);
+            lineGeo.setFromPoints([sphereA.position, sphereB.position]);
+            controls.update();
+            composer.render();
+        }
+
+        // Initialize
+        updateVisuals();
+        animate();
+
+    </script>
+</body>
+</html>
