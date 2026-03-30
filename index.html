@@ -620,7 +620,8 @@
         // Axes Helper starting at the corner instead of origin
         const axesHelper = new THREE.AxesHelper(BOX_SIZE);
         axesHelper.position.set(-SCALE, -SCALE, -SCALE);
-        axesHelper.setColors(0xdddddd, 0xdddddd, 0xdddddd);
+        // Colors: X(NS)=Yellow, Y(TF)=Green, Z(JP)=Purple
+        axesHelper.setColors(0xE4AE3A, 0x33A474, 0x8A61A6);
         scene.add(axesHelper);
 
         // Group colors
@@ -682,6 +683,25 @@
         const line = new THREE.Line(lineGeo, lineMat);
         scene.add(line);
 
+        // Guide Lines (Dashed)
+        function createGuideLines() {
+            const matX = new THREE.LineDashedMaterial({ color: 0xE4AE3A, transparent: true, opacity: 0.6, dashSize: 0.2, gapSize: 0.1 }); // NS
+            const matY = new THREE.LineDashedMaterial({ color: 0x33A474, transparent: true, opacity: 0.6, dashSize: 0.2, gapSize: 0.1 }); // TF
+            const matZ = new THREE.LineDashedMaterial({ color: 0x8A61A6, transparent: true, opacity: 0.6, dashSize: 0.2, gapSize: 0.1 }); // JP
+            
+            const lines = {
+                x: new THREE.Line(new THREE.BufferGeometry(), matX),
+                y: new THREE.Line(new THREE.BufferGeometry(), matY),
+                z: new THREE.Line(new THREE.BufferGeometry(), matZ)
+            };
+            scene.add(lines.x);
+            scene.add(lines.y);
+            scene.add(lines.z);
+            return lines;
+        }
+        const guidesA = createGuideLines();
+        const guidesB = createGuideLines();
+
         function updateVisuals() {
             const uA = state.users.A;
             const uB = state.users.B;
@@ -710,6 +730,24 @@
 
             // Line update
             lineGeo.setFromPoints([sphereA.position, sphereB.position]);
+
+            // Update Guides
+            function updateGuides(guides, pos, visible) {
+                guides.x.visible = guides.y.visible = guides.z.visible = visible;
+                if (!visible) return;
+                
+                // X (NS) guide to left wall
+                guides.x.geometry.setFromPoints([pos, new THREE.Vector3(-SCALE, pos.y, pos.z)]);
+                guides.x.computeLineDistances();
+                // Y (TF) guide to floor
+                guides.y.geometry.setFromPoints([pos, new THREE.Vector3(pos.x, -SCALE, pos.z)]);
+                guides.y.computeLineDistances();
+                // Z (JP) guide to back wall
+                guides.z.geometry.setFromPoints([pos, new THREE.Vector3(pos.x, pos.y, -SCALE)]);
+                guides.z.computeLineDistances();
+            }
+            updateGuides(guidesA, sphereA.position, sphereA.visible);
+            updateGuides(guidesB, sphereB.position, sphereB.visible);
 
             // 2. Looks mapping
             const applyLooks = (mesh, data) => {
