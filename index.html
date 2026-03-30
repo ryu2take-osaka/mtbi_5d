@@ -714,8 +714,8 @@
         let particles;
         let particlePositions;
         let particleData = [];
-        const MAX_PARTICLES = 200;
-        let flowParams = { speed: 0, count: 0, from: null, to: null, opacity: 0, size: 0, color: new THREE.Color() };
+        const MAX_PARTICLES = 250; // Increased
+        let flowParams = { speed: 0, count: 0, from: null, to: null, opacity: 0, size: 0, jitter: 0, color: new THREE.Color() };
 
         function initParticles() {
             const geometry = new THREE.BufferGeometry();
@@ -889,10 +889,12 @@
                 const diff = Math.abs(uA.EI - uB.EI) / 100;
                 const totalE = ( (100 - uA.EI) + (100 - uB.EI) ) / 200;
                 
-                flowParams.speed = 0.2 + diff * 1.2;
-                flowParams.count = Math.floor(10 + totalE * (MAX_PARTICLES - 10));
-                flowParams.opacity = 0.2 + diff * 0.6;
-                flowParams.size = 0.04 + diff * 0.08;
+                // Boost baselines for more impact
+                flowParams.speed = 0.5 + diff * 1.5;
+                flowParams.count = Math.floor(60 + totalE * (MAX_PARTICLES - 60));
+                flowParams.opacity = 0.3 + diff * 0.5;
+                flowParams.size = 0.15 + diff * 0.15;
+                flowParams.jitter = 0.05 + totalE * 0.5; // Wobble depends on energy strength
 
                 if (uA.EI < uB.EI) {
                     flowParams.from = sphereA; flowParams.to = sphereB;
@@ -939,10 +941,11 @@
                 p.progress += delta * flowParams.speed;
                 if (p.progress > 1.0) p.progress -= 1.0;
                 
-                const jitter = 0.08;
-                const rx = (Math.random() - 0.5) * jitter;
-                const ry = (Math.random() - 0.5) * jitter;
-                const rz = (Math.random() - 0.5) * jitter;
+                // Expression through jitter/wobble
+                const j = flowParams.jitter;
+                const rx = (Math.random() - 0.5) * j;
+                const ry = (Math.random() - 0.5) * j;
+                const rz = (Math.random() - 0.5) * j;
                 
                 positions[i * 3] = start.x + (end.x - start.x) * p.progress + rx;
                 positions[i * 3 + 1] = start.y + (end.y - start.y) * p.progress + ry;
