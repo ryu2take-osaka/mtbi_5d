@@ -251,8 +251,8 @@
         }
 
         .share-btn {
-            margin-top: 15px;
-            padding: 10px 24px;
+            margin-top: 10px;
+            padding: 10px 20px;
             background: #fff;
             color: #000;
             border: none;
@@ -265,17 +265,24 @@
             align-items: center;
             gap: 8px;
             transition: transform 0.1s, opacity 0.2s;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .share-btn.screenshot {
+            background: #444;
+            color: #fff;
         }
 
         .share-btn:hover {
             opacity: 0.8;
-            transform: scale(1.05);
+            transform: scale(1.02);
         }
 
         .share-btn svg {
             width: 16px;
             height: 16px;
-            fill: #000;
+            fill: currentColor;
         }
 
         @media (max-width: 768px) {
@@ -383,6 +390,10 @@
                 <button class="share-btn" id="share-x-btn">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.007 4.126H5.078z"></path></svg>
                     ポストする
+                </button>
+                <button class="share-btn screenshot" id="screenshot-btn">
+                    <svg viewBox="0 0 24 24"><path d="M12 9c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm9-4h-4.17l-1.42-3h-6.82l-1.42 3h-4.17c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h18c1.103 0 2-.897 2-2v-12c0-1.103-.897-2-2-2zm-9 13c-3.309 0-6-2.691-6-6s2.691-6 6-6 6 2.691 6 6-2.691 6-6 6z"></path></svg>
+                    スクショ保存
                 </button>
             </div>
         </div>
@@ -542,6 +553,18 @@
             window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
         });
 
+        // Screenshot functionality
+        document.getElementById('screenshot-btn').addEventListener('click', () => {
+            // Render one frame specifically for the capture
+            composer.render();
+            const link = document.createElement('a');
+            const typeA = getMBTITypeString(state.users.A);
+            const typeB = getMBTITypeString(state.users.B);
+            link.download = `mbti_5d_${typeA}_${typeB}.png`;
+            link.href = renderer.domElement.toDataURL('image/png');
+            link.click();
+        });
+
         refreshUI();
 
         // --- Three.js Setup ---
@@ -555,7 +578,7 @@
         const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
         camera.position.set(0, 0, 15);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance", preserveDrawingBuffer: true });
         // Performance limiters for mobile
         const pixelRatio = Math.min(window.devicePixelRatio, 1.5);
         renderer.setPixelRatio(pixelRatio);
@@ -617,12 +640,34 @@
         gridYZ.position.set(-SCALE, 0, 0);
         scene.add(gridYZ);
 
-        // Axes Helper starting at the corner instead of origin
-        const axesHelper = new THREE.AxesHelper(BOX_SIZE);
-        axesHelper.position.set(-SCALE, -SCALE, -SCALE);
-        // Colors: X(NS)=Yellow, Y(TF)=Green, Z(JP)=Purple
-        axesHelper.setColors(0xE4AE3A, 0x33A474, 0x8A61A6);
-        scene.add(axesHelper);
+        // Axes (Replaced AxesHelper with thick Cylinders for better visibility)
+        const axisRadius = 0.05; // Setting thickness explicitly
+        const thickAxesGroup = new THREE.Group();
+
+        // X (NS) = Yellow
+        const matX = new THREE.MeshStandardMaterial({ color: 0xE4AE3A, roughness: 0.5, metalness: 0.1 });
+        const geoX = new THREE.CylinderGeometry(axisRadius, axisRadius, BOX_SIZE, 8);
+        const cylX = new THREE.Mesh(geoX, matX);
+        cylX.rotation.z = Math.PI / 2;
+        cylX.position.set(0, -SCALE, -SCALE);
+        thickAxesGroup.add(cylX);
+
+        // Y (TF) = Green
+        const matY = new THREE.MeshStandardMaterial({ color: 0x33A474, roughness: 0.5, metalness: 0.1 });
+        const geoY = new THREE.CylinderGeometry(axisRadius, axisRadius, BOX_SIZE, 8);
+        const cylY = new THREE.Mesh(geoY, matY);
+        cylY.position.set(-SCALE, 0, -SCALE);
+        thickAxesGroup.add(cylY);
+
+        // Z (JP) = Purple
+        const matZ = new THREE.MeshStandardMaterial({ color: 0x8A61A6, roughness: 0.5, metalness: 0.1 });
+        const geoZ = new THREE.CylinderGeometry(axisRadius, axisRadius, BOX_SIZE, 8);
+        const cylZ = new THREE.Mesh(geoZ, matZ);
+        cylZ.rotation.x = Math.PI / 2;
+        cylZ.position.set(-SCALE, -SCALE, 0);
+        thickAxesGroup.add(cylZ);
+
+        scene.add(thickAxesGroup);
 
         // Group colors
         const groupColors = {
