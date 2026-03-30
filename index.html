@@ -694,8 +694,8 @@
             return new THREE.Color('#ffffff');
         }
 
-        // Spheres creation (mobile optimization: 16, 16 segments)
-        const sphereGeo = new THREE.SphereGeometry(1, 16, 16);
+        // Particles reduction (mobile optimization: 16, 16 segments)
+        const sphereGeo = new THREE.SphereGeometry(1, 12, 12);
         
         const createSphereMat = () => new THREE.MeshStandardMaterial({
             color: 0xffffff,
@@ -709,6 +709,38 @@
         const sphereB = new THREE.Mesh(sphereGeo, createSphereMat());
         scene.add(sphereA);
         scene.add(sphereB);
+
+        // Particle System
+        let particles;
+        let particlePositions;
+        let particleData = [];
+        const MAX_PARTICLES = 200;
+        let flowParams = { speed: 0, count: 0, from: null, to: null, opacity: 0, size: 0, color: new THREE.Color() };
+
+        function initParticles() {
+            const geometry = new THREE.BufferGeometry();
+            particlePositions = new Float32Array(MAX_PARTICLES * 3);
+            geometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+            
+            const material = new THREE.PointsMaterial({
+                size: 0.1,
+                transparent: true,
+                opacity: 0.5,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                color: 0xffffff,
+                map: new THREE.TextureLoader().load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/sprites/circle.png') 
+            });
+
+            particles = new THREE.Points(geometry, material);
+            particles.visible = false;
+            scene.add(particles);
+
+            for (let i = 0; i < MAX_PARTICLES; i++) {
+                particleData.push({ progress: Math.random() });
+            }
+        }
+        initParticles();
 
         // Lights
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
@@ -851,6 +883,32 @@
             // Adjust bloom based on average E-I globally (optional juicy effect)
             const avgGlow = ((100 - uA.EI)/100 + (100 - uB.EI)/100) / 2;
             bloomPass.strength = 0.5 + avgGlow * 1.5;
+
+            // Particle Flow updates
+            if (sphereA.visible && sphereB.visible) {
+                const diff = Math.abs(uA.EI - uB.EI) / 100;
+                const totalE = ( (100 - uA.EI) + (100 - uB.EI) ) / 200;
+                
+                flowParams.speed = 0.2 + diff * 1.2;
+                flowParams.count = Math.floor(10 + totalE * (MAX_PARTICLES - 10));
+                flowParams.opacity = 0.2 + diff * 0.6;
+                flowParams.size = 0.04 + diff * 0.08;
+
+                if (uA.EI < uB.EI) {
+                    flowParams.from = sphereA; flowParams.to = sphereB;
+                    flowParams.color = getGroupColor(uA.NS, uA.TF, uA.JP);
+                } else {
+                    flowParams.from = sphereB; flowParams.to = sphereA;
+                    flowParams.color = getGroupColor(uB.NS, uB.TF, uB.JP);
+                }
+                
+                particles.visible = true;
+                particles.material.opacity = flowParams.opacity;
+                particles.material.size = flowParams.size;
+                particles.material.color.copy(flowParams.color);
+            } else {
+                particles.visible = false;
+            }
         }
 
         // Window resize handler
@@ -864,10 +922,44 @@
             composer.setSize(width, height);
         }
 
+        function updateParticles(delta) {
+            if (!particles.visible || !flowParams.from || !flowParams.to) return;
+            
+            const start = flowParams.from.position;
+            const end = flowParams.to.position;
+            const positions = particles.geometry.attributes.position.array;
+            
+            for (let i = 0; i < MAX_PARTICLES; i++) {
+                if (i >= flowParams.count) {
+                    positions[i * 3] = 5000; // Offscreen
+                    continue;
+                }
+                
+                let p = particleData[i];
+                p.progress += delta * flowParams.speed;
+                if (p.progress > 1.0) p.progress -= 1.0;
+                
+                const jitter = 0.08;
+                const rx = (Math.random() - 0.5) * jitter;
+                const ry = (Math.random() - 0.5) * jitter;
+                const rz = (Math.random() - 0.5) * jitter;
+                
+                positions[i * 3] = start.x + (end.x - start.x) * p.progress + rx;
+                positions[i * 3 + 1] = start.y + (end.y - start.y) * p.progress + ry;
+                positions[i * 3 + 2] = start.z + (end.z - start.z) * p.progress + rz;
+            }
+            particles.geometry.attributes.position.needsUpdate = true;
+        }
+
         // Render loop
+        const clock = new THREE.Clock();
         function animate() {
             requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            
             lineGeo.setFromPoints([sphereA.position, sphereB.position]);
+            updateParticles(delta);
+            
             controls.update();
             composer.render();
         }
