@@ -369,7 +369,20 @@
             #ui-panel {
                 padding: 12px 15px;
                 gap: 8px;
+                max-height: 60vh; /* Limit panel height */
+                overflow-y: auto; /* Enable scroll within the UI area */
+                -webkit-overflow-scrolling: touch;
+                position: relative;
             }
+            /* Add subtle scrollbar for mobile visibility */
+            #ui-panel::-webkit-scrollbar {
+                width: 4px;
+            }
+            #ui-panel::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 2px;
+            }
+
             .tabs {
                 display: grid;
                 grid-template-columns: 1fr 1fr 1fr;
@@ -385,20 +398,21 @@
             .slider-row {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 5px;
-                margin-bottom: 8px;
+                gap: 4px; /* Even tighter */
+                margin-bottom: 6px;
             }
             .slider-label {
                 width: 100%;
                 font-size: 10px;
+                margin-bottom: 2px;
             }
             .slider-control {
                 width: 100%;
                 gap: 8px;
             }
             .adjust-btn {
-                width: 28px;
-                height: 28px;
+                width: 32px; /* Slightly bigger for touch target, but width is okay */
+                height: 32px;
                 font-size: 16px;
             }
             #header { display: none; }
