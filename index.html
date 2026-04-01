@@ -398,12 +398,39 @@
                 gap: 8px;
                 margin-bottom: 5px;
             }
+            .score-summary {
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 12px;
+                padding: 12px;
+                margin-top: 20px;
+                font-size: 13px;
+                line-height: 1.6;
+                color: rgba(255, 255, 255, 0.9);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .score-summary-item {
+                margin-bottom: 10px;
+            }
+            .score-summary-item:last-child {
+                margin-bottom: 0;
+            }
+            .score-type-name {
+                font-weight: 800;
+                color: #fff;
+                font-size: 14px;
+            }
+            .score-nickname {
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.6);
+                display: block;
+            }
+
             .main-ui {
                 gap: 10px;
             }
             .tab-panel {
                 padding-top: 5px;
-                padding-bottom: 60px; /* Space to prevent last item from cutting off */
+                padding-bottom: 120px; /* Space to prevent last item from cutting off */
             }
             .slider-row {
                 flex-direction: column;
@@ -544,6 +571,17 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 10h8M10 8v8m-6-3h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z"/></svg>
                         URLをコピー
                     </button>
+                </div>
+
+                <div class="score-summary">
+                    <div class="score-summary-item" id="summary-A">
+                        P1 は <span class="score-type-name">XXXX-X</span> です<br>
+                        <span class="score-nickname">タイプ：不明</span>
+                    </div>
+                    <div class="score-summary-item" id="summary-B">
+                        P2 は <span class="score-type-name">XXXX-X</span> です<br>
+                        <span class="score-nickname">タイプ：不明</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -768,6 +806,21 @@
         camera.position.set(0, 0, 15);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance", preserveDrawingBuffer: true });
+        
+        // MBTI Nickname Mapping
+        const mbtiNicknames = {
+            'INTJ': '建築家', 'INTP': '論理学者', 'ENTJ': '指揮官', 'ENTP': '討論者',
+            'INFJ': '提唱者', 'INFP': '仲介者', 'ENFJ': '主人公', 'ENFP': '運動家',
+            'ISTJ': '管理者', 'ISFJ': '擁護者', 'ESTJ': '幹部', 'ESFJ': '領事',
+            'ISTP': '巨匠', 'ISFP': '冒険家', 'ESTP': '起業家', 'ESFP': 'エンターテイナー'
+        };
+
+        function getNickname(typeStr) {
+            // "ENTJ-A" -> "ENTJ"
+            const base = typeStr.split('-')[0];
+            return mbtiNicknames[base] || '不明';
+        }
+
         // Performance limiters for mobile
         const pixelRatio = Math.min(window.devicePixelRatio, 1.5);
         renderer.setPixelRatio(pixelRatio);
@@ -981,8 +1034,18 @@
             line.visible = sphereA.visible && sphereB.visible;
 
             // Update tab texts
-            document.getElementById('tab-A').querySelector('.mbti-type').textContent = `(${getMBTITypeString(uA)})`;
-            document.getElementById('tab-B').querySelector('.mbti-type').textContent = `(${getMBTITypeString(uB)})`;
+            const typeStrA = getMBTITypeString(uA);
+            const typeStrB = getMBTITypeString(uB);
+            document.getElementById('tab-A').querySelector('.mbti-type').textContent = `(${typeStrA})`;
+            document.getElementById('tab-B').querySelector('.mbti-type').textContent = `(${typeStrB})`;
+
+            // Update SCORE summary
+            const summaryA = document.getElementById('summary-A');
+            summaryA.querySelector('.score-type-name').textContent = typeStrA;
+            summaryA.querySelector('.score-nickname').textContent = `タイプ：${getNickname(typeStrA)}`;
+            const summaryB = document.getElementById('summary-B');
+            summaryB.querySelector('.score-type-name').textContent = typeStrB;
+            summaryB.querySelector('.score-nickname').textContent = `タイプ：${getNickname(typeStrB)}`;
 
             // 1. Position mapping: (Value - 50) / 50 => -1.0 ~ 1.0, then scale
             const getPos = (data) => new THREE.Vector3(
