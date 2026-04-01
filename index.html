@@ -114,13 +114,42 @@
         }
 
         .slider-label {
-            width: 150px;
+            width: 130px;
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             color: rgba(255, 255, 255, 0.8);
             letter-spacing: 0.5px;
+        }
+
+        .slider-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .adjust-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        .adjust-btn:active {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .slider-wrapper {
@@ -285,32 +314,69 @@
             fill: currentColor;
         }
 
+        .tab-panel {
+            display: none;
+            width: 100%;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .copy-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2ecc71;
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
         @media (max-width: 768px) {
             .main-ui {
-                flex-direction: column;
-                gap: 20px;
+                gap: 15px;
             }
-            .info-area {
+            .tab-panel {
+                padding-top: 10px;
+            }
+            .slider-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                margin-bottom: 5px;
+            }
+            .slider-label {
                 width: 100%;
-                border-left: none;
-                border-top: 1px solid rgba(255, 255, 255, 0.15);
-                padding-left: 0;
-                padding-top: 20px;
-                flex-direction: row;
-                flex-wrap: wrap;
-                justify-content: space-around;
             }
-            .score-container, .rank-container {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-            .share-btn {
-                margin-top: 20px;
-                width: 80%;
-                justify-content: center;
+            .slider-control {
+                width: 100%;
             }
             #header { display: none; }
+            .score-value { font-size: 36px; }
+            .rank-badge { font-size: 24px; }
         }
     </style>
 
@@ -332,72 +398,106 @@
     <div id="canvas-container"></div>
 
     <div id="ui-panel">
-        <div class="main-ui">
-            <div class="controls-area">
-                <div class="tabs">
-                    <div class="tab active" data-target="A" id="tab-A">User A <span class="mbti-type"></span></div>
-                    <div class="tab" data-target="B" id="tab-B">User B <span class="mbti-type"></span></div>
-                </div>
+        <div class="tabs">
+            <div class="tab active" data-target="A" id="tab-A">P1 <span class="mbti-type"></span></div>
+            <div class="tab" data-target="B" id="tab-B">P2 <span class="mbti-type"></span></div>
+            <div class="tab" data-target="SCORE" id="tab-SCORE">SCORE</div>
+        </div>
 
-                <div class="sliders">
+        <div class="main-ui">
+            <!-- P1 & P2 Panels (Dynamic) -->
+            <div id="panel-A" class="tab-panel active">
+                <div class="sliders" id="sliders-container">
+                    <!-- Slider rows will be here, or just keep them and show/hide the whole sliders div? 
+                         Wait, since P1 and P2 use the same sliders layout, I'll just move the existing sliders here. -->
                     <div class="slider-row color-EI" style="--track-color: #4298B4; --val: 50%;">
                         <div class="slider-label"><span id="lbl-EI-L">外向型</span><span id="lbl-EI-R">内向型</span></div>
-                        <div class="slider-wrapper">
-                            <div class="ticks" id="ticks-EI"></div>
-                            <input type="range" id="slider-EI" min="0" max="100" step="1" value="50">
+                        <div class="slider-control">
+                            <button class="adjust-btn" data-key="EI" data-dir="-1">−</button>
+                            <div class="slider-wrapper">
+                                <div class="ticks" id="ticks-EI"></div>
+                                <input type="range" id="slider-EI" min="0" max="100" step="1" value="50">
+                            </div>
+                            <button class="adjust-btn" data-key="EI" data-dir="1">+</button>
                         </div>
                     </div>
+                    <!-- Repeating for others... -->
                     <div class="slider-row color-NS" style="--track-color: #E4AE3A; --val: 50%;">
                         <div class="slider-label"><span id="lbl-NS-L">直感型</span><span id="lbl-NS-R">現実型</span></div>
-                        <div class="slider-wrapper">
-                            <div class="ticks" id="ticks-NS"></div>
-                            <input type="range" id="slider-NS" min="0" max="100" step="1" value="50">
+                        <div class="slider-control">
+                            <button class="adjust-btn" data-key="NS" data-dir="-1">−</button>
+                            <div class="slider-wrapper">
+                                <div class="ticks" id="ticks-NS"></div>
+                                <input type="range" id="slider-NS" min="0" max="100" step="1" value="50">
+                            </div>
+                            <button class="adjust-btn" data-key="NS" data-dir="1">+</button>
                         </div>
                     </div>
                     <div class="slider-row color-TF" style="--track-color: #33A474; --val: 50%;">
                         <div class="slider-label"><span id="lbl-TF-L">思考型</span><span id="lbl-TF-R">感情型</span></div>
-                        <div class="slider-wrapper">
-                            <div class="ticks" id="ticks-TF"></div>
-                            <input type="range" id="slider-TF" min="0" max="100" step="1" value="50">
+                        <div class="slider-control">
+                            <button class="adjust-btn" data-key="TF" data-dir="-1">−</button>
+                            <div class="slider-wrapper">
+                                <div class="ticks" id="ticks-TF"></div>
+                                <input type="range" id="slider-TF" min="0" max="100" step="1" value="50">
+                            </div>
+                            <button class="adjust-btn" data-key="TF" data-dir="1">+</button>
                         </div>
                     </div>
                     <div class="slider-row color-JP" style="--track-color: #8A61A6; --val: 50%;">
                         <div class="slider-label"><span id="lbl-JP-L">計画型</span><span id="lbl-JP-R">探索型</span></div>
-                        <div class="slider-wrapper">
-                            <div class="ticks" id="ticks-JP"></div>
-                            <input type="range" id="slider-JP" min="0" max="100" step="1" value="50">
+                        <div class="slider-control">
+                            <button class="adjust-btn" data-key="JP" data-dir="-1">−</button>
+                            <div class="slider-wrapper">
+                                <div class="ticks" id="ticks-JP"></div>
+                                <input type="range" id="slider-JP" min="0" max="100" step="1" value="50">
+                            </div>
+                            <button class="adjust-btn" data-key="JP" data-dir="1">+</button>
                         </div>
                     </div>
                     <div class="slider-row color-AT" style="--track-color: #E46562; --val: 50%;">
                         <div class="slider-label"><span id="lbl-AT-L">自己主張型</span><span id="lbl-AT-R">激動型</span></div>
-                        <div class="slider-wrapper">
-                            <div class="ticks" id="ticks-AT"></div>
-                            <input type="range" id="slider-AT" min="0" max="100" step="1" value="50">
+                        <div class="slider-control">
+                            <button class="adjust-btn" data-key="AT" data-dir="-1">−</button>
+                            <div class="slider-wrapper">
+                                <div class="ticks" id="ticks-AT"></div>
+                                <input type="range" id="slider-AT" min="0" max="100" step="1" value="50">
+                            </div>
+                            <button class="adjust-btn" data-key="AT" data-dir="1">+</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="info-area">
-                <div class="score-container">
-                    <div class="info-title">Distance Score</div>
-                    <div class="score-value" id="score-display">1.00</div>
+            <div id="panel-SCORE" class="tab-panel">
+                <div class="score-row">
+                    <div class="score-container">
+                        <div class="info-title">Distance Score</div>
+                        <div class="score-value" id="score-display">1.00</div>
+                    </div>
+                    <div class="rank-container">
+                        <div class="info-title">Compatibility</div>
+                        <div class="rank-badge" id="rank-display" style="color: #fff;">S</div>
+                    </div>
                 </div>
-                <div class="rank-container">
-                    <div class="info-title">Compatibility</div>
-                    <div class="rank-badge" id="rank-display" style="color: #fff;">S</div>
+                <div class="actions-grid">
+                    <button class="share-btn" id="share-x-btn">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.007 4.126H5.078z"></path></svg>
+                        ポスト
+                    </button>
+                    <button class="share-btn screenshot" id="screenshot-btn">
+                        <svg viewBox="0 0 24 24"><path d="M12 9c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm9-4h-4.17l-1.42-3h-6.82l-1.42 3h-4.17c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h18c1.103 0 2-.897 2-2v-12c0-1.103-.897-2-2-2zm-9 13c-3.309 0-6-2.691-6-6s2.691-6 6-6 6 2.691 6 6-2.691 6-6 6z"></path></svg>
+                        保存
+                    </button>
+                    <button class="share-btn" id="copy-url-btn" style="background: rgba(255,255,255,0.1); color: #fff; grid-column: span 2;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 10h8M10 8v8m-6-3h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z"/></svg>
+                        URLをコピー
+                    </button>
                 </div>
-                <button class="share-btn" id="share-x-btn">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.007 4.126H5.078z"></path></svg>
-                    ポストする
-                </button>
-                <button class="share-btn screenshot" id="screenshot-btn">
-                    <svg viewBox="0 0 24 24"><path d="M12 9c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm9-4h-4.17l-1.42-3h-6.82l-1.42 3h-4.17c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h18c1.103 0 2-.897 2-2v-12c0-1.103-.897-2-2-2zm-9 13c-3.309 0-6-2.691-6-6s2.691-6 6-6 6 2.691 6 6-2.691 6-6 6z"></path></svg>
-                    スクショ保存
-                </button>
             </div>
         </div>
     </div>
+    <div id="copy-toast" class="copy-toast">URLをコピーしました</div>
 
     <script type="module">
         import * as THREE from 'three';
@@ -525,10 +625,35 @@
         // Handle tab clicks
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
+                const target = tab.getAttribute('data-target');
                 tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                state.activeUser = tab.getAttribute('data-target');
-                refreshUI();
+                
+                // Switch Panels
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                if (target === 'SCORE') {
+                    document.getElementById('panel-SCORE').classList.add('active');
+                } else {
+                    document.getElementById('panel-A').classList.add('active');
+                    state.activeUser = target;
+                    refreshUI();
+                }
+            });
+        });
+
+        // Handle Adjustment Buttons (- / +)
+        document.querySelectorAll('.adjust-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.getAttribute('data-key');
+                const dir = parseInt(btn.getAttribute('data-dir'));
+                const slider = sliders[key];
+                let val = parseFloat(slider.value) + dir;
+                val = Math.max(0, Math.min(100, val));
+                state.users[state.activeUser][key] = val;
+                slider.value = val;
+                slider.parentElement.parentElement.parentElement.style.setProperty('--val', val + '%');
+                updateLabel(key, val);
+                updateVisuals();
             });
         });
 
@@ -563,6 +688,19 @@
             link.download = `mbti_5d_${typeA}_${typeB}.png`;
             link.href = renderer.domElement.toDataURL('image/png');
             link.click();
+        });
+
+        // Copy URL
+        document.getElementById('copy-url-btn').addEventListener('click', () => {
+            const b64 = encodeStateToBase64();
+            const baseUrl = window.location.origin + window.location.pathname;
+            const url = `${baseUrl}?d=${encodeURIComponent(b64)}`;
+            
+            navigator.clipboard.writeText(url).then(() => {
+                const toast = document.getElementById('copy-toast');
+                toast.style.opacity = '1';
+                setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+            });
         });
 
         refreshUI();
