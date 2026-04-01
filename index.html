@@ -1086,13 +1086,10 @@
                 // Color
                 const col = getGroupColor(data.NS, data.TF, data.JP);
 
-                // Size (A-T): smaller AT is more assertive (bigger/denser). 
-                // Scaled down: Min size 0.6, Max size 0.9 (150% ratio)
-                const minSize = 0.6;
-                const maxSize = 0.9;
-                const size = minSize + ((100 - data.AT) / 100) * (maxSize - minSize); 
+                // Scale mapping: A=1.3, T=0.7 (Base=1.0 @ 50)
+                const getScale = (at) => 1.3 - (at / 100) * 0.6;
+                mesh.scale.setScalar(getScale(data.AT));
 
-                mesh.scale.setScalar(size);
                 mesh.material.color.copy(col).multiplyScalar(0.2); // Base reflection
                 mesh.material.emissive.copy(col);
                 mesh.material.emissiveIntensity = emissiveIntensity;
@@ -1210,6 +1207,32 @@
         function animate() {
             requestAnimationFrame(animate);
             const delta = clock.getDelta();
+            
+            // Clear base positions first to avoid cumulative offset
+            const getPos = (data) => new THREE.Vector3(
+                ((data.NS - 50) / 50) * SCALE,
+                ((data.TF - 50) / 50) * SCALE,
+                ((data.JP - 50) / 50) * SCALE
+            );
+            sphereA.position.copy(getPos(state.users.A));
+            sphereB.position.copy(getPos(state.users.B));
+
+            // Apply turbulence (vibration) for T (Turbulent) types
+            const applyTurbulence = (sphere, data, timeOffset) => {
+                const at = data.AT;
+                if (at > 50) {
+                    const tFactor = (at - 50) / 50;
+                    const baseRadius = 0.8;
+                    const currentScale = 1.3 - (at / 100) * 0.6;
+                    const currentRadius = baseRadius * currentScale;
+                    const maxOffset = baseRadius - currentRadius;
+                    const offset = Math.sin(performance.now() / 1000 * Math.PI) * maxOffset * tFactor;
+                    sphere.position.y += offset;
+                }
+            };
+
+            applyTurbulence(sphereA, state.users.A, 0);
+            applyTurbulence(sphereB, state.users.B, 5);
             
             lineGeo.setFromPoints([sphereA.position, sphereB.position]);
             updateParticles(delta);
