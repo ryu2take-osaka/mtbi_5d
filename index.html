@@ -336,9 +336,132 @@
         .score-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             width: 100%;
             margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .score-box {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .complement-section {
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .complement-title {
+            font-size: 14px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 1px;
+        }
+
+        .stack-comparison {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: relative;
+        }
+
+        .function-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            width: 80px;
+        }
+
+        .stack-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 5px;
+        }
+
+        .function-node {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            color: rgba(255,255,255,0.7);
+        }
+
+        .function-node::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .aura-gold {
+            border-color: rgba(255, 215, 0, 0.6);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), inset 0 0 10px rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+        .aura-gold::before {
+            opacity: 1;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, transparent 70%);
+            animation: pulse-gold 2.5s infinite;
+        }
+
+        .aura-blue {
+            border-color: rgba(0, 191, 255, 0.6);
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.3), inset 0 0 10px rgba(0, 191, 255, 0.2);
+            color: #00bfff;
+            background: rgba(0, 191, 255, 0.1);
+        }
+        .aura-blue::before {
+            opacity: 1;
+            background: radial-gradient(circle, rgba(0, 191, 255, 0.4) 0%, transparent 70%);
+            animation: pulse-blue 2.5s infinite;
+        }
+
+        .aura-weak {
+            border-color: rgba(255, 255, 255, 0.2);
+            opacity: 0.6;
+        }
+
+        @keyframes pulse-gold {
+            0% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.4); opacity: 0.1; }
+            100% { transform: scale(1); opacity: 0.4; }
+        }
+        @keyframes pulse-blue {
+            0% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.4); opacity: 0.1; }
+            100% { transform: scale(1); opacity: 0.4; }
+        }
+
+        .stack-divider {
+            width: 1px;
+            height: 200px;
+            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.1), transparent);
         }
 
         .actions-grid {
@@ -454,8 +577,22 @@
                 font-size: 18px;
             }
             #header { display: none; }
-            .score-value { font-size: 32px; }
-            .rank-badge { font-size: 22px; padding: 4px 15px; }
+            .score-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .score-box {
+                width: 100%;
+                padding: 10px;
+            }
+            .function-node {
+                width: 38px;
+                height: 38px;
+                font-size: 12px;
+            }
+            .stack-divider {
+                height: 160px;
+            }
         }
     </style>
 
@@ -550,13 +687,36 @@
 
             <div id="panel-SCORE" class="tab-panel">
                 <div class="score-row">
-                    <div class="score-container">
+                    <div class="score-box">
                         <div class="info-title">Distance Score</div>
                         <div class="score-value" id="score-display">1.00</div>
+                        <div class="rank-badge" id="rank-display" style="font-size: 14px; padding: 2px 10px;">S</div>
                     </div>
-                    <div class="rank-container">
-                        <div class="info-title">Compatibility</div>
-                        <div class="rank-badge" id="rank-display" style="color: #fff;">S</div>
+                    <div class="score-box">
+                        <div class="info-title">Complement Score</div>
+                        <div class="score-value" id="comp-score-display">0</div>
+                        <div class="rank-badge" id="comp-rank-display" style="font-size: 14px; padding: 2px 10px;">D</div>
+                    </div>
+                </div>
+
+                <div class="complement-section">
+                    <div class="complement-title">Function Stack Complement</div>
+                    <div class="stack-comparison">
+                        <div class="function-stack" id="stack-A">
+                            <div class="stack-label">P1 Stack</div>
+                            <div class="function-node" id="p1-f1">-</div>
+                            <div class="function-node" id="p1-f2">-</div>
+                            <div class="function-node" id="p1-f3">-</div>
+                            <div class="function-node" id="p1-f4">-</div>
+                        </div>
+                        <div class="stack-divider"></div>
+                        <div class="function-stack" id="stack-B">
+                            <div class="stack-label">P2 Stack</div>
+                            <div class="function-node" id="p2-f1">-</div>
+                            <div class="function-node" id="p2-f2">-</div>
+                            <div class="function-node" id="p2-f3">-</div>
+                            <div class="function-node" id="p2-f4">-</div>
+                        </div>
                     </div>
                 </div>
                 <div class="actions-grid">
@@ -761,7 +921,13 @@
             const b64 = encodeStateToBase64();
             const baseUrl = window.location.origin + window.location.pathname;
             const url = `${baseUrl}?d=${encodeURIComponent(b64)}`;
-            const text = "2人のMBTI診断結果の近さを見るツール MBTI 5D Visualizer\n\n今回の結果はこちら\n" + url;
+            
+            const dist = document.getElementById('score-display').textContent;
+            const comp = document.getElementById('comp-score-display').textContent;
+            const rankD = document.getElementById('rank-display').textContent;
+            const rankC = document.getElementById('comp-rank-display').textContent;
+
+            const text = `MBTI 5D Visualizer\n性格の「近さ」と「補完関係」を可視化\n\nDistance: ${dist} (${rankD})\nComplement: ${comp} (${rankC})\n\n結果をチェック：\n${url}`;
             
             window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
         });
@@ -814,10 +980,33 @@
             'ISTP': '巨匠', 'ISFP': '冒険家', 'ESTP': '起業家', 'ESFP': 'エンターテイナー'
         };
 
+        const mbtiFunctionStacks = {
+            'INTJ': ['Ni', 'Te', 'Fi', 'Se'],
+            'INTP': ['Ti', 'Ne', 'Si', 'Fe'],
+            'ENTJ': ['Te', 'Ni', 'Se', 'Fi'],
+            'ENTP': ['Ne', 'Ti', 'Fe', 'Si'],
+            'INFJ': ['Ni', 'Fe', 'Ti', 'Se'],
+            'INFP': ['Fi', 'Ne', 'Si', 'Te'],
+            'ENFJ': ['Fe', 'Ni', 'Se', 'Ti'],
+            'ENFP': ['Ne', 'Fi', 'Te', 'Si'],
+            'ISTJ': ['Si', 'Te', 'Fi', 'Ne'],
+            'ISFJ': ['Si', 'Fe', 'Ti', 'Ne'],
+            'ESTJ': ['Te', 'Si', 'Ne', 'Fi'],
+            'ESFJ': ['Fe', 'Si', 'Ne', 'Ti'],
+            'ISTP': ['Ti', 'Se', 'Ni', 'Fe'],
+            'ISFP': ['Fi', 'Se', 'Ni', 'Te'],
+            'ESTP': ['Se', 'Ti', 'Fe', 'Ni'],
+            'ESFP': ['Se', 'Fi', 'Te', 'Ni']
+        };
+
         function getNickname(typeStr) {
-            // "ENTJ-A" -> "ENTJ"
             const base = typeStr.split('-')[0];
             return mbtiNicknames[base] || '不明';
+        }
+
+        function getFunctionStack(typeStr) {
+            const base = typeStr.split('-')[0];
+            return mbtiFunctionStacks[base] || null;
         }
 
         // Performance limiters for mobile
@@ -1127,6 +1316,95 @@
 
             rankDisplay.textContent = rank;
             rankDisplay.style.color = rankColor;
+            
+            // --- Complement Score Implementation ---
+            const stackA = getFunctionStack(typeStrA);
+            const stackB = getFunctionStack(typeStrB);
+            
+            let compScore = 0;
+            if (stackA && stackB) {
+                // 1. Position-based complement
+                // P1(1) vs P2(4)
+                if (stackA[0] === stackB[3]) compScore += 40;
+                if (stackB[0] === stackA[3]) compScore += 40;
+                
+                // P1(1) vs P2(3) -> user said P1(1) vs P2(3) +25
+                if (stackA[0] === stackB[2]) compScore += 25;
+                if (stackB[0] === stackA[2]) compScore += 25;
+                
+                // P1(2) vs P2(4) or P1(1) vs P2(2) -> +15
+                if (stackA[1] === stackB[3]) compScore += 15;
+                if (stackB[1] === stackA[3]) compScore += 15;
+                if (stackA[0] === stackB[1]) compScore += 15;
+                if (stackB[0] === stackA[1]) compScore += 15;
+                
+                // P1(2) vs P2(3) -> +10
+                if (stackA[1] === stackB[2]) compScore += 10;
+                if (stackB[1] === stackA[2]) compScore += 10;
+                
+                // 2. Axis complementarity bonus
+                const getPerceptionAxis = (s) => (s.includes('Ni') || s.includes('Se')) ? 'NiSe' : 'NeSi';
+                const getJudgmentAxis = (s) => (s.includes('Ti') || s.includes('Fe')) ? 'TiFe' : 'TeFi';
+                
+                if (getPerceptionAxis(stackA) !== getPerceptionAxis(stackB)) compScore += 15;
+                if (getJudgmentAxis(stackA) !== getJudgmentAxis(stackB)) compScore += 15;
+                
+                // 3. Reverse orientation bonus
+                // Check for same base function but different orientation (e.g. Te and Ti)
+                const getBase = (f) => f.substring(0, 1);
+                const getOrient = (f) => f.substring(1, 2);
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j < 4; j++) {
+                        if (getBase(stackA[i]) === getBase(stackB[j]) && getOrient(stackA[i]) !== getOrient(stackB[j])) {
+                            compScore += 2; // Subtle bonus
+                        }
+                    }
+                }
+            }
+            
+            compScore = Math.min(100, compScore);
+            document.getElementById('comp-score-display').textContent = compScore;
+            
+            let compRank = 'D';
+            let compRankColor = '#e74c3c';
+            if (compScore >= 80) { compRank = 'S+'; compRankColor = '#FFD700'; }
+            else if (compScore >= 60) { compRank = 'A'; compRankColor = '#2ecc71'; }
+            else if (compScore >= 40) { compRank = 'B'; compRankColor = '#3498db'; }
+            else if (compScore >= 20) { compRank = 'C'; compRankColor = '#e67e22'; }
+            
+            const compRankDisplay = document.getElementById('comp-rank-display');
+            compRankDisplay.textContent = compRank;
+            compRankDisplay.style.color = compRankColor;
+            compRankDisplay.style.boxShadow = `0 0 10px ${compRankColor}`;
+
+            // Update Function Nodes
+            const updateNodes = (stack, pPrefix, otherStack) => {
+                for (let i = 0; i < 4; i++) {
+                    const node = document.getElementById(`${pPrefix}-f${i+1}`);
+                    if (stack) {
+                        const func = stack[i];
+                        node.textContent = func;
+                        node.className = 'function-node';
+                        
+                        // Check for aura
+                        if (otherStack) {
+                            // High complement aura (if it's the partner of the other's dom/inf)
+                            if (func === otherStack[3] || func === otherStack[0]) {
+                                node.classList.add('aura-gold');
+                            } else if (otherStack.includes(func)) {
+                                node.classList.add('aura-blue');
+                            } else {
+                                node.classList.add('aura-weak');
+                            }
+                        }
+                    } else {
+                        node.textContent = '-';
+                        node.className = 'function-node';
+                    }
+                }
+            };
+            updateNodes(stackA, 'p1', stackB);
+            updateNodes(stackB, 'p2', stackA);
             
             // Adjust bloom based on average E-I globally (optional juicy effect)
             const avgGlow = ((100 - uA.EI)/100 + (100 - uB.EI)/100) / 2;
