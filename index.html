@@ -689,7 +689,7 @@
                 <div class="score-row">
                     <div class="score-box">
                         <div class="info-title">Distance Score</div>
-                        <div class="score-value" id="score-display">1.00</div>
+                        <div class="score-value" id="score-display">100</div>
                         <div class="rank-badge" id="rank-display" style="font-size: 14px; padding: 2px 10px;">S</div>
                     </div>
                     <div class="score-box">
@@ -1292,25 +1292,25 @@
             // Normalized positions distance = dist / SCALE
             const distance = sphereA.position.distanceTo(sphereB.position) / SCALE; 
             
-            // Score = 1 - (D/3)  -- based on spec
-            let score = 1.0 - (distance / 3.0);
-            score = Math.max(0, Math.min(1, score));
+            // Score = (1 - (D/3)) * 100 -- based on spec
+            let score = (1.0 - (distance / 3.0)) * 100;
+            score = Math.max(0, Math.min(100, score));
 
             // Line opacity based on real distance to make it fade
             lineMat.opacity = Math.max(0.1, 1.0 - (distance * 0.3));
 
             // Update DOM Info
-            scoreDisplay.textContent = score.toFixed(2);
+            scoreDisplay.textContent = Math.round(score);
 
             let rank = 'D';
             let rankColor = '#e74c3c'; // Red
-            if (score >= 0.8) {
+            if (score >= 80) {
                 rank = 'S'; rankColor = '#FFD700'; // Gold
-            } else if (score >= 0.6) {
+            } else if (score >= 60) {
                 rank = 'A'; rankColor = '#2ecc71'; // Green
-            } else if (score >= 0.4) {
+            } else if (score >= 40) {
                 rank = 'B'; rankColor = '#3498db'; // Blue
-            } else if (score >= 0.2) {
+            } else if (score >= 20) {
                 rank = 'C'; rankColor = '#e67e22'; // Orange
             }
 
