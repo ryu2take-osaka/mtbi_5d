@@ -735,6 +735,9 @@
 
                 <div class="complement-section">
                     <div class="complement-title">Function Stack Complement</div>
+                    <div style="font-size: 10px; color: rgba(255,255,255,0.5); text-align: center; margin-top: -15px; margin-bottom: 20px;">
+                        Mirror補完：同じ役割で逆の視点を提供し合い、相乗効果を生む
+                    </div>
                     <div class="stack-comparison">
                         <div class="function-stack" id="stack-A">
                             <div class="stack-label">P1 Stack</div>
@@ -1370,7 +1373,7 @@
                 if (stackA[1] === stackB[3]) compScore += 20;
                 if (stackB[1] === stackA[3]) compScore += 20;
 
-                // (1)-(2): +15
+                // (1)-(2): +15 (Rescue/Mild)
                 if (stackA[0] === stackB[1]) compScore += 15;
                 if (stackB[0] === stackA[1]) compScore += 15;
 
@@ -1419,30 +1422,29 @@
                         if (otherStack) {
                             const isMirror = (f1, f2) => f1.substring(0, 1) === f2.substring(0, 1) && f1.substring(1, 2) !== f2.substring(1, 2);
                             
-                            // 1. Mirror (Cyan)
-                            if (isMirror(func, otherStack[i])) {
-                                node.classList.add('aura-cyan');
+                            // Rescue mapping (self, other) to aura priority
+                            const otherIdx = otherStack.indexOf(func);
+                            const selfIdx = i;
+
+                            // 1. Gold Rescue (Highest)
+                            if ((selfIdx === 0 && otherIdx === 3) || (selfIdx === 3 && otherIdx === 0)) {
+                                node.classList.add('aura-gold');
+                            } 
+                            // 2. Blue Rescue (Strong)
+                            else if ((selfIdx === 0 && otherIdx === 2) || (selfIdx === 2 && otherIdx === 0) || 
+                                     (selfIdx === 1 && otherIdx === 3) || (selfIdx === 3 && otherIdx === 1)) {
+                                node.classList.add('aura-blue');
+                            } 
+                            // 3. Green Rescue / Mild (Medium)
+                            else if ((selfIdx === 0 && otherIdx === 1) || (selfIdx === 1 && otherIdx === 0) ||
+                                     (selfIdx === 1 && otherIdx === 2) || (selfIdx === 2 && otherIdx === 1)) {
+                                node.classList.add('aura-green');
                             }
-                            // 2. Rescue (Gold/Blue/Green)
-                            else if (otherStack.includes(func)) {
-                                const otherIdx = otherStack.indexOf(func);
-                                // pPrefix is 'p1' or 'p2'. Let me determine current position correctly.
-                                const selfIdx = i; // 0-based
-                                
-                                // Mapping (self, other) to aura
-                                // (0,3) or (3,0) -> Gold (but the calculation is symmetric, if P1(0) matches P2(3), then from p1 side it's (0,3) and from p2 side it's (3,0))
-                                if ((selfIdx === 0 && otherIdx === 3) || (selfIdx === 3 && otherIdx === 0)) {
-                                    node.classList.add('aura-gold');
-                                } else if ((selfIdx === 0 && otherIdx === 2) || (selfIdx === 2 && otherIdx === 0) || 
-                                           (selfIdx === 1 && otherIdx === 3) || (selfIdx === 3 && otherIdx === 1)) {
-                                    node.classList.add('aura-blue');
-                                } else if ((selfIdx === 0 && otherIdx === 1) || (selfIdx === 1 && otherIdx === 0) ||
-                                           (selfIdx === 1 && otherIdx === 2) || (selfIdx === 2 && otherIdx === 1)) {
-                                    node.classList.add('aura-green');
-                                } else {
-                                    node.classList.add('aura-weak');
-                                }
-                            } else {
+                            // 4. Mirror (Cyan) - Separate category
+                            else if (isMirror(func, otherStack[i])) {
+                                node.classList.add('aura-cyan');
+                            } 
+                            else {
                                 node.classList.add('aura-weak');
                             }
                         }
