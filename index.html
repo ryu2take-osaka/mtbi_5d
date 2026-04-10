@@ -442,6 +442,30 @@
             animation: pulse-blue 2.5s infinite;
         }
 
+        .aura-green {
+            border-color: rgba(46, 204, 113, 0.6);
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.3), inset 0 0 10px rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+        }
+        .aura-green::before {
+            opacity: 1;
+            background: radial-gradient(circle, rgba(46, 204, 113, 0.4) 0%, transparent 70%);
+            animation: pulse-green 2.5s infinite;
+        }
+
+        .aura-cyan {
+            border-color: rgba(0, 255, 255, 0.6);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3), inset 0 0 10px rgba(0, 255, 255, 0.2);
+            color: #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        .aura-cyan::before {
+            opacity: 1;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.4) 0%, transparent 70%);
+            animation: pulse-cyan 2.5s infinite;
+        }
+
         .aura-weak {
             border-color: rgba(255, 255, 255, 0.2);
             opacity: 0.6;
@@ -449,12 +473,22 @@
 
         @keyframes pulse-gold {
             0% { transform: scale(1); opacity: 0.4; }
-            50% { transform: scale(1.4); opacity: 0.1; }
+            50% { transform: scale(1.6); opacity: 0.1; }
             100% { transform: scale(1); opacity: 0.4; }
         }
         @keyframes pulse-blue {
             0% { transform: scale(1); opacity: 0.4; }
             50% { transform: scale(1.4); opacity: 0.1; }
+            100% { transform: scale(1); opacity: 0.4; }
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.3); opacity: 0.1; }
+            100% { transform: scale(1); opacity: 0.4; }
+        }
+        @keyframes pulse-cyan {
+            0% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.3); opacity: 0.1; }
             100% { transform: scale(1); opacity: 0.4; }
         }
 
@@ -1323,24 +1357,32 @@
             
             let compScore = 0;
             if (stackA && stackB) {
-                // 1. Position-based complement
-                // P1(1) vs P2(4)
+                // Rescue patterns (Same function, different positions)
+                // (1)-(4): +40
                 if (stackA[0] === stackB[3]) compScore += 40;
                 if (stackB[0] === stackA[3]) compScore += 40;
                 
-                // P1(1) vs P2(3) -> user said P1(1) vs P2(3) +25
+                // (1)-(3): +25
                 if (stackA[0] === stackB[2]) compScore += 25;
                 if (stackB[0] === stackA[2]) compScore += 25;
-                
-                // P1(2) vs P2(4) or P1(1) vs P2(2) -> +15
-                if (stackA[1] === stackB[3]) compScore += 15;
-                if (stackB[1] === stackA[3]) compScore += 15;
+
+                // (2)-(4): +20
+                if (stackA[1] === stackB[3]) compScore += 20;
+                if (stackB[1] === stackA[3]) compScore += 20;
+
+                // (1)-(2): +15
                 if (stackA[0] === stackB[1]) compScore += 15;
                 if (stackB[0] === stackA[1]) compScore += 15;
-                
-                // P1(2) vs P2(3) -> +10
-                if (stackA[1] === stackB[2]) compScore += 10;
-                if (stackB[1] === stackA[2]) compScore += 10;
+
+                // (2)-(3): +12 (Mild)
+                if (stackA[1] === stackB[2]) compScore += 12;
+                if (stackB[1] === stackA[2]) compScore += 12;
+
+                // Mirror patterns (Same position, reverse orientation e.g. Ne vs Ni)
+                const isMirror = (f1, f2) => f1.substring(0, 1) === f2.substring(0, 1) && f1.substring(1, 2) !== f2.substring(1, 2);
+                for (let i = 0; i < 4; i++) {
+                    if (isMirror(stackA[i], stackB[i])) compScore += 10;
+                }
                 
                 // 2. Axis complementarity bonus
                 const getPerceptionAxis = (s) => (s.includes('Ni') || s.includes('Se')) ? 'NiSe' : 'NeSi';
@@ -1348,18 +1390,6 @@
                 
                 if (getPerceptionAxis(stackA) !== getPerceptionAxis(stackB)) compScore += 15;
                 if (getJudgmentAxis(stackA) !== getJudgmentAxis(stackB)) compScore += 15;
-                
-                // 3. Reverse orientation bonus
-                // Check for same base function but different orientation (e.g. Te and Ti)
-                const getBase = (f) => f.substring(0, 1);
-                const getOrient = (f) => f.substring(1, 2);
-                for (let i = 0; i < 4; i++) {
-                    for (let j = 0; j < 4; j++) {
-                        if (getBase(stackA[i]) === getBase(stackB[j]) && getOrient(stackA[i]) !== getOrient(stackB[j])) {
-                            compScore += 2; // Subtle bonus
-                        }
-                    }
-                }
             }
             
             compScore = Math.min(100, compScore);
@@ -1386,13 +1416,32 @@
                         node.textContent = func;
                         node.className = 'function-node';
                         
-                        // Check for aura
                         if (otherStack) {
-                            // High complement aura (if it's the partner of the other's dom/inf)
-                            if (func === otherStack[3] || func === otherStack[0]) {
-                                node.classList.add('aura-gold');
-                            } else if (otherStack.includes(func)) {
-                                node.classList.add('aura-blue');
+                            const isMirror = (f1, f2) => f1.substring(0, 1) === f2.substring(0, 1) && f1.substring(1, 2) !== f2.substring(1, 2);
+                            
+                            // 1. Mirror (Cyan)
+                            if (isMirror(func, otherStack[i])) {
+                                node.classList.add('aura-cyan');
+                            }
+                            // 2. Rescue (Gold/Blue/Green)
+                            else if (otherStack.includes(func)) {
+                                const otherIdx = otherStack.indexOf(func);
+                                // pPrefix is 'p1' or 'p2'. Let me determine current position correctly.
+                                const selfIdx = i; // 0-based
+                                
+                                // Mapping (self, other) to aura
+                                // (0,3) or (3,0) -> Gold (but the calculation is symmetric, if P1(0) matches P2(3), then from p1 side it's (0,3) and from p2 side it's (3,0))
+                                if ((selfIdx === 0 && otherIdx === 3) || (selfIdx === 3 && otherIdx === 0)) {
+                                    node.classList.add('aura-gold');
+                                } else if ((selfIdx === 0 && otherIdx === 2) || (selfIdx === 2 && otherIdx === 0) || 
+                                           (selfIdx === 1 && otherIdx === 3) || (selfIdx === 3 && otherIdx === 1)) {
+                                    node.classList.add('aura-blue');
+                                } else if ((selfIdx === 0 && otherIdx === 1) || (selfIdx === 1 && otherIdx === 0) ||
+                                           (selfIdx === 1 && otherIdx === 2) || (selfIdx === 2 && otherIdx === 1)) {
+                                    node.classList.add('aura-green');
+                                } else {
+                                    node.classList.add('aura-weak');
+                                }
                             } else {
                                 node.classList.add('aura-weak');
                             }
