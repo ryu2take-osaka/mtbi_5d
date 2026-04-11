@@ -1053,6 +1053,9 @@
             });
         });
 
+        const isAllFifty = (data) => 
+            data.EI === 50 && data.NS === 50 && data.TF === 50 && data.JP === 50 && data.AT === 50;
+
         function onInteraction() {
             state.mode = 'EDITING';
             state.lastInteraction = performance.now();
@@ -1497,10 +1500,6 @@
             const uA = state.users.A;
             const uB = state.users.B;
 
-            // Check if all values are 50
-            const isAllFifty = (data) => 
-                data.EI === 50 && data.NS === 50 && data.TF === 50 && data.JP === 50 && data.AT === 50;
-
             sphereA.visible = !isAllFifty(uA);
             sphereB.visible = !isAllFifty(uB);
             line.visible = sphereA.visible && sphereB.visible;
@@ -1642,6 +1641,11 @@
                 if (getJudgmentAxis(stackA) !== getJudgmentAxis(stackB)) compScore += 15;
             }
             
+            compScore = Math.min(100, compScore);
+            document.getElementById('comp-score-display').textContent = compScore;
+            
+            let compRank = 'D';
+            let compRankColor = '#e74c3c';
             if (compScore >= 80) { compRank = 'S+'; compRankColor = '#FFD700'; }
             else if (compScore >= 60) { compRank = 'A'; compRankColor = '#2ecc71'; }
             else if (compScore >= 40) { compRank = 'B'; compRankColor = '#3498db'; }
@@ -1741,18 +1745,23 @@
             // State Machine transitions
             if (state.mode === 'EDITING') {
                 if (now - state.lastInteraction > 600) {
-                    state.mode = 'ANALYZING';
-                    document.getElementById('analysis-overlay').style.display = 'flex';
-                    setTimeout(() => {
-                        if (state.mode === 'ANALYZING') {
-                            state.mode = 'PLAYING';
-                            state.timeline.elapsed = 0;
-                            state.timeline.phase = 'IDLE';
-                            document.getElementById('analysis-overlay').style.display = 'none';
-                            document.getElementById('narration-panel').style.display = 'block';
-                            calculateComplements();
-                        }
-                    }, 1200); // Analysis time
+                    // Only start if BOTH users are modified
+                    if (!isAllFifty(state.users.A) && !isAllFifty(state.users.B)) {
+                        state.mode = 'ANALYZING';
+                        document.getElementById('analysis-overlay').style.display = 'flex';
+                        setTimeout(() => {
+                            if (state.mode === 'ANALYZING') {
+                                state.mode = 'PLAYING';
+                                state.timeline.elapsed = 0;
+                                state.timeline.phase = 'IDLE';
+                                document.getElementById('analysis-overlay').style.display = 'none';
+                                document.getElementById('narration-panel').style.display = 'block';
+                                calculateComplements();
+                            }
+                        }, 1200); // Analysis time
+                    } else {
+                        state.mode = 'IDLE';
+                    }
                 }
             }
             
