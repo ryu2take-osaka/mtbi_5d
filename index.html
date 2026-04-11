@@ -1287,28 +1287,155 @@
         scene.add(sphereA);
         scene.add(sphereB);
 
-        // --- Complement Beam System ---
+        // --- Enhanced Complement Beam System ---
         const beamsGroup = new THREE.Group();
         scene.add(beamsGroup);
 
-        function createBeamMesh(start, end, color, thickness, opacity) {
-            const direction = new THREE.Vector3().subVectors(end, start);
-            const length = direction.length();
-            const geometry = new THREE.CylinderGeometry(thickness, thickness, length, 8);
-            const material = new THREE.MeshStandardMaterial({
-                color: color,
-                emissive: color,
-                emissiveIntensity: 2.0,
-                transparent: true,
-                opacity: opacity,
-                blending: THREE.AdditiveBlending
-            });
-            const mesh = new THREE.Mesh(geometry, material);
+        // Particle System for Beams
+        const BEAM_PARTICLE_COUNT = 200;
+        const beamParticlesGeo = new THREE.BufferGeometry();
+        const beamParticlesPos = new Float32Array(BEAM_PARTICLE_COUNT * 3);
+        beamParticlesGeo.setAttribute('position', new THREE.BufferAttribute(beamParticlesPos, 3));
+        const beamParticlesMat = new THREE.PointsMaterial({
+            size: 0.05,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            color: 0xffffff,
+            map: new THREE.TextureLoader().load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/sprites/circle.png')
+        });
+        const beamParticles = new THREE.Points(beamParticlesGeo, beamParticlesMat);
+        scene.add(beamParticles);
+
+        let activeBeams = [];
+
+        class VisualBeam {
+            constructor(data) {
+                this.data = data; // from, to, type, s, energy
+                this.group = new THREE.Group();
+                const color = data.type === 'RESCUE' ? 0xFFD700 : 0x00FFFF;
+                
+                const s = data.s;
+                const opacity = 0.4 + 0.6 * s;
+
+                // 1. Core
+                const coreRadius = 0.01 + 0.03 * s;
+                this.core = new THREE.Mesh(
+                    new THREE.CylinderGeometry(coreRadius, coreRadius, 1, 8),
+                    new THREE.MeshStandardMaterial({
+                        color: color, emissive: color, emissiveIntensity: 3.0,
+                        transparent: true, opacity: opacity,
+                        blending: THREE.AdditiveBlending, depthWrite: false
+                    })
+                );
+                this.group.add(this.core);
+
+                // 2. Glow
+                const glowRadius = 0.03 + 0.08 * s;
+                this.glow = new THREE.Mesh(
+                    new THREE.CylinderGeometry(glowRadius, glowRadius, 1, 8),
+                    new THREE.MeshStandardMaterial({
+                        color: color, emissive: color, emissiveIntensity: 1.0,
+                        transparent: true, opacity: opacity * 0.4,
+                        blending: THREE.AdditiveBlending, depthWrite: false
+                    })
+                );
+                this.group.add(this.glow);
+
+                this.particles = [];
+                const pCount = Math.floor(10 + s * 20);
+                for(let i=0; i<pCount; i++) {
+                    this.particles.push({ t: Math.random(), speed: 0.005 + Math.random() * 0.01 });
+                }
+            }
+
+            update(time, start, end) {
+                const direction = new THREE.Vector3().subVectors(end, start);
+                const length = direction.length();
+                if (length < 0.01) return;
+
+                this.group.position.copy(start).add(direction.clone().multiplyScalar(0.5));
+                this.group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
+                this.group.scale.set(1, length, 1);
+
+                // Pulse core and glow
+                const pulse = 1.0 + Math.sin(time * 3.0) * 0.1 * this.data.s;
+                this.glow.scale.set(pulse, 1, pulse);
+                this.core.scale.set(1.0 + Math.sin(time * 5.0) * 0.05, 1, 1.0 + Math.sin(time * 5.0) * 0.05);
+
+                // Jitter
+                const jitter = Math.sin(time * 10.0 + length) * 0.002;
+                this.group.position.x += jitter;
+            }
+        }
+
+        function updateBeamsVisibility(t) {
+            beamsGroup.clear();
+            activeBeams = [];
             
-            // Reorient cylinder
-            mesh.position.copy(start).add(direction.multiplyScalar(0.5));
-            mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
-            return mesh;
+            const posA = sphereA.position;
+            const posB = sphereB.position;
+            const time = performance.now() / 1000;
+            
+            complementData.forEach((c, idx) => {
+                let show = false;
+                if (state.timeline.phase === 'CORE' && idx < 2) show = true;
+                if (state.timeline.phase === 'SUB' && idx >= 2 && idx < 5) show = true;
+                if (state.timeline.phase === 'OVERVIEW' && idx < 6) show = true;
+                
+                if (show) {
+                    const vb = new VisualBeam(c);
+                    const start = c.from === 'A' ? posA : posB;
+                    const end = c.from === 'B' ? posA : posB;
+                    
+                    if (c.type === 'MIRROR') {
+                        // Oscillation of direction if mirror
+                        const flip = Math.sin(time * 2.0) > 0;
+                        const s = flip ? posA : posB;
+                        const e = flip ? posB : posA;
+                        vb.update(time, s, e);
+                        activeBeams.push({ beam: vb, start: s, end: e });
+                    } else {
+                        vb.update(time, start, end);
+                        activeBeams.push({ beam: vb, start, end });
+                    }
+                    beamsGroup.add(vb.group);
+                }
+            });
+
+            // Update beam particles
+            const positions = beamParticlesGeo.attributes.position.array;
+            let pIdx = 0;
+            activeBeams.forEach(ab => {
+                const b = ab.beam;
+                const start = ab.start;
+                const end = ab.end;
+                b.particles.forEach(p => {
+                    if (pIdx < BEAM_PARTICLE_COUNT) {
+                        p.t += p.speed;
+                        if (p.t > 1.0) p.t = 0;
+                        
+                        const pos = new THREE.Vector3().lerpVectors(start, end, p.t);
+                        // Add slight orbital movement around beam
+                        const angle = time * 5 + p.t * 10;
+                        const r = 0.05;
+                        pos.x += Math.sin(angle) * r;
+                        pos.z += Math.cos(angle) * r;
+
+                        positions[pIdx * 3] = pos.x;
+                        positions[pIdx * 3 + 1] = pos.y;
+                        positions[pIdx * 3 + 2] = pos.z;
+                        pIdx++;
+                    }
+                });
+            });
+            // Hide remaining particles
+            for(let i = pIdx; i < BEAM_PARTICLE_COUNT; i++) {
+                positions[i * 3] = 5000;
+            }
+            beamParticlesGeo.attributes.position.needsUpdate = true;
+            beamParticles.visible = activeBeams.length > 0;
         }
 
         let complementData = [];
@@ -1335,7 +1462,6 @@
                 for(let j=0; j<4; j++) {
                     if (stackA[i] === stackB[j]) {
                         // A -> B
-                        // S = Need_B[f] * A[f] * p(f)
                         const sAB = (1.0 - posStrength[j]) * posStrength[i] * weights[i];
                         if (sAB > 0.05) complementData.push({ type: 'RESCUE', from: 'A', to: 'B', func: stackA[i], s: sAB, energy });
                         
@@ -1350,12 +1476,10 @@
             const isMirror = (f1, f2) => f1.substring(0, 1) === f2.substring(0, 1) && f1.substring(1, 2) !== f2.substring(1, 2);
             for(let i=0; i<4; i++) {
                 if (isMirror(stackA[i], stackB[i])) {
-                    // S = posStrength[i] * 0.8 (approx factor for mirror) * weights[i]
                     const s = posStrength[i] * 0.8 * weights[i];
                     complementData.push({ type: 'MIRROR', from: 'BOTH', funcA: stackA[i], funcB: stackB[i], s: s, energy });
                 }
             }
-
             complementData.sort((a,b) => b.s - a.s);
         }
 
@@ -1388,7 +1512,6 @@
                 state.timeline.phase = newPhase;
                 onPhaseChange(newPhase);
             }
-
             updateBeamsVisibility(t);
         }
 
@@ -1419,39 +1542,9 @@
                     showNarration(`ただし、性格の「ズレ」による<br>摩擦には注意が必要です。`);
                     break;
                 case 'OVERVIEW':
-                    showNarration(`総括：${rank}評価のパートナー`, `補完し合いながら進化し続ける関係です。`);
+                    showNarration(`総括：${rank}評価のパートナー性能`, `補完し合いながら進化し続ける関係です。`);
                     break;
             }
-        }
-
-        function updateBeamsVisibility(t) {
-            beamsGroup.clear();
-            
-            const uA = state.users.A;
-            const uB = state.users.B;
-            const posA = sphereA.position;
-            const posB = sphereB.position;
-            
-            complementData.forEach((c, idx) => {
-                let visible = false;
-                if (state.timeline.phase === 'CORE' && idx < 2) visible = true;
-                if (state.timeline.phase === 'SUB' && idx >= 2 && idx < 5) visible = true;
-                if (state.timeline.phase === 'OVERVIEW' && idx < 6) visible = true;
-                
-                if (visible) {
-                    const color = c.type === 'RESCUE' ? 0xFFD700 : 0x00FFFF;
-                    const thickness = (0.01 + 0.07 * Math.pow(c.s, 1.8)) * (0.8 + 0.4 * c.energy);
-                    const opacity = 0.3 + 0.7 * c.s;
-                    
-                    if (c.from === 'A') beamsGroup.add(createBeamMesh(posA, posB, color, thickness, opacity));
-                    else if (c.from === 'B') beamsGroup.add(createBeamMesh(posB, posA, color, thickness, opacity));
-                    else {
-                        // Mirror - bi-directional
-                        beamsGroup.add(createBeamMesh(posA, posB, color, thickness, opacity));
-                        beamsGroup.add(createBeamMesh(posB, posA, color, thickness * 0.5, opacity));
-                    }
-                }
-            });
         }
 
         function initParticles() {
