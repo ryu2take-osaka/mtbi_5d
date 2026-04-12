@@ -20,19 +20,29 @@
             height: 100vh;
         }
 
-        #canvas-container {
+        #visualizer-main {
             flex: 1;
-            position: relative;
+            display: flex;
             width: 100%;
-            z-index: 0;
+            height: 50vh;
+            min-height: 350px;
+            background: rgba(0,0,0,0.2);
+            position: relative;
             overflow: hidden;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #canvas-container {
+            flex-grow: 1;
+            position: relative;
+            z-index: 1;
         }
 
         #ui-panel {
             position: relative;
             width: 100%;
             background: rgba(10, 10, 15, 1);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
             box-sizing: border-box;
             padding: 15px 20px;
             z-index: 10;
@@ -40,6 +50,7 @@
             flex-direction: column;
             gap: 10px;
             flex-shrink: 0;
+            max-height: 50vh;
         }
 
         #header {
@@ -351,151 +362,95 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .complement-section {
+        .score-narration {
             margin-top: 20px;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 12px;
             padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .complement-title {
-            font-size: 14px;
-            font-weight: 800;
-            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
-            color: rgba(255, 255, 255, 0.9);
-            letter-spacing: 1px;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
         }
 
-        .stack-comparison {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            position: relative;
-        }
 
-        .function-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            align-items: center;
-            width: 80px;
-        }
-
-        .stack-label {
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 5px;
-        }
 
         .function-node {
             width: 45px;
             height: 45px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
             position: relative;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             color: rgba(255,255,255,0.7);
+            background: rgba(255,255,255,0.05);
         }
 
-        .function-node::before {
-            content: '';
+        .function-node.glow-high {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px #ffd700, inset 0 0 10px #ffd700;
+            color: #fff;
+            background: rgba(255, 215, 0, 0.3);
+            opacity: 1 !important;
+        }
+
+        .function-node.glow-mid {
+            border-color: #00bfff;
+            box-shadow: 0 0 15px #00bfff;
+            color: #fff;
+            background: rgba(0, 191, 255, 0.2);
+            opacity: 1 !important;
+        }
+
+        .function-node.glow-mirror {
+            animation: pulse-mirror 2s infinite;
+            opacity: 1 !important;
+        }
+
+        @keyframes pulse-mirror {
+            0%, 100% { border-color: #00ffff; box-shadow: 0 0 5px #00ffff; }
+            50% { border-color: #fff; box-shadow: 0 0 20px #00ffff; }
+        }
+
+        .function-node.dimmed {
+            opacity: 0.25;
+        }
+
+        .side-stack {
             position: absolute;
-            top: -5px;
-            left: -5px;
-            right: -5px;
-            bottom: -5px;
-            border-radius: 50%;
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.5s ease;
+            top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+        }
+        
+        #side-stack-A {
+            left: 15px;
         }
 
-        .aura-gold {
-            border-color: rgba(255, 215, 0, 0.6);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), inset 0 0 10px rgba(255, 215, 0, 0.2);
-            color: #ffd700;
-            background: rgba(255, 215, 0, 0.1);
-        }
-        .aura-gold::before {
-            opacity: 1;
-            background: radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, transparent 70%);
-            animation: pulse-gold 2.5s infinite;
+        #side-stack-B {
+            right: 15px;
         }
 
-        .aura-blue {
-            border-color: rgba(0, 191, 255, 0.6);
-            box-shadow: 0 0 20px rgba(0, 191, 255, 0.3), inset 0 0 10px rgba(0, 191, 255, 0.2);
-            color: #00bfff;
-            background: rgba(0, 191, 255, 0.1);
-        }
-        .aura-blue::before {
-            opacity: 1;
-            background: radial-gradient(circle, rgba(0, 191, 255, 0.4) 0%, transparent 70%);
-            animation: pulse-blue 2.5s infinite;
-        }
-
-        .aura-green {
-            border-color: rgba(46, 204, 113, 0.6);
-            box-shadow: 0 0 20px rgba(46, 204, 113, 0.3), inset 0 0 10px rgba(46, 204, 113, 0.2);
-            color: #2ecc71;
-            background: rgba(46, 204, 113, 0.1);
-        }
-        .aura-green::before {
-            opacity: 1;
-            background: radial-gradient(circle, rgba(46, 204, 113, 0.4) 0%, transparent 70%);
-            animation: pulse-green 2.5s infinite;
-        }
-
-        .aura-cyan {
-            border-color: rgba(0, 255, 255, 0.6);
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3), inset 0 0 10px rgba(0, 255, 255, 0.2);
-            color: #00ffff;
-            background: rgba(0, 255, 255, 0.1);
-        }
-        .aura-cyan::before {
-            opacity: 1;
-            background: radial-gradient(circle, rgba(0, 255, 255, 0.4) 0%, transparent 70%);
-            animation: pulse-cyan 2.5s infinite;
-        }
-
-        .aura-weak {
-            border-color: rgba(255, 255, 255, 0.2);
-            opacity: 0.6;
-        }
-
-        @keyframes pulse-gold {
-            0% { transform: scale(1); opacity: 0.4; }
-            50% { transform: scale(1.6); opacity: 0.1; }
-            100% { transform: scale(1); opacity: 0.4; }
-        }
-        @keyframes pulse-blue {
-            0% { transform: scale(1); opacity: 0.4; }
-            50% { transform: scale(1.4); opacity: 0.1; }
-            100% { transform: scale(1); opacity: 0.4; }
-        }
-        @keyframes pulse-green {
-            0% { transform: scale(1); opacity: 0.4; }
-            50% { transform: scale(1.3); opacity: 0.1; }
-            100% { transform: scale(1); opacity: 0.4; }
-        }
-        @keyframes pulse-cyan {
-            0% { transform: scale(1); opacity: 0.4; }
-            50% { transform: scale(1.3); opacity: 0.1; }
-            100% { transform: scale(1); opacity: 0.4; }
-        }
-
-        .stack-divider {
-            width: 1px;
-            height: 200px;
-            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.1), transparent);
+        .side-stack-label {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 5px;
+            white-space: nowrap;
         }
 
         .actions-grid {
@@ -504,6 +459,7 @@
             gap: 10px;
             width: 100%;
         }
+
 
         .copy-toast {
             position: fixed;
@@ -597,112 +553,36 @@
         }
 
         @media (max-width: 768px) {
-            #narration-text { font-size: 18px; }
-        }
+            #visualizer-main {
+                height: 380px;
+                min-height: 380px;
+                flex-direction: column !important;
+            }
+            .side-stack {
+                top: 10px;
+                flex-direction: row;
+                padding: 6px;
+                gap: 8px;
+                border-radius: 6px;
+                width: auto !important;
+            }
+            #side-stack-A { left: 10px; }
+            #side-stack-B { right: 10px; }
+            .side-stack-label { display: none; }
+            #canvas-container {
+                height: 100%;
+                width: 100%;
+                flex: 1;
+            }
             #ui-panel {
-                padding: 12px 40px; /* Large side gutters for scrolling */
-                gap: 8px;
-                max-height: 55vh; /* slightly shorter to show more canvas */
+                padding: 12px 20px;
+                max-height: 60vh;
                 overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-                position: relative;
             }
-            /* Add subtle scrollbar for mobile visibility */
-            #ui-panel::-webkit-scrollbar {
-                width: 4px;
-            }
-            #ui-panel::-webkit-scrollbar-thumb {
-                background: rgba(255, 255, 255, 0.2);
-                border-radius: 2px;
-            }
-
-            .tab .mbti-type {
-                display: none; /* Hide subtitle on mobile to save vertical space */
-            }
-
-            .tab {
-                padding: 10px 4px;
-                font-size: 14px;
-            }
-
-            .tabs {
-                display: grid;
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 8px;
-                margin-bottom: 5px;
-            }
-            .score-summary {
-                background: rgba(255, 255, 255, 0.05);
-                border-radius: 12px;
-                padding: 12px;
-                margin-top: 20px;
-                font-size: 13px;
-                line-height: 1.6;
-                color: rgba(255, 255, 255, 0.9);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-            }
-            .score-summary-item {
-                margin-bottom: 10px;
-            }
-            .score-summary-item:last-child {
-                margin-bottom: 0;
-            }
-            .score-type-name {
-                font-weight: 800;
-                color: #fff;
-                font-size: 14px;
-            }
-            .score-nickname {
-                font-size: 11px;
-                color: rgba(255, 255, 255, 0.6);
-                display: inline;
-                margin-left: 5px;
-            }
-
-            .main-ui {
-                gap: 10px;
-            }
-            .tab-panel {
-                padding-top: 5px;
-                padding-bottom: 120px; /* Space to prevent last item from cutting off */
-            }
-            .slider-row {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-                margin-bottom: 12px; /* Increased to allow clear separation */
-            }
-            .slider-label {
-                width: 100%;
-                font-size: 11px;
-                margin-bottom: 4px;
-            }
-            .slider-control {
-                width: 100%;
-                gap: 10px;
-            }
-            .adjust-btn {
-                width: 36px; /* High hit rate */
-                height: 36px;
-                font-size: 18px;
-            }
+            .tab .mbti-type { display: none; }
+            .tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+            .score-row { flex-direction: column; }
             #header { display: none; }
-            .score-row {
-                flex-direction: column;
-                gap: 10px;
-            }
-            .score-box {
-                width: 100%;
-                padding: 10px;
-            }
-            .function-node {
-                width: 38px;
-                height: 38px;
-                font-size: 12px;
-            }
-            .stack-divider {
-                height: 160px;
-            }
         }
     </style>
 
@@ -721,13 +601,31 @@
         <p>性格を「座標・光・密度」として体験する</p>
     </div>
 
-    <div id="canvas-container">
-        <div id="analysis-overlay">
-            <div class="analysis-spinner"></div>
-            <div class="analysis-text">ANALYZING ENERGY...</div>
+    <div id="visualizer-main">
+        <div id="side-stack-A" class="side-stack" style="width: 80px;">
+            <div class="side-stack-label">P1 STACK</div>
+            <div id="p1-f1-side" class="function-node">?</div>
+            <div id="p1-f2-side" class="function-node">?</div>
+            <div id="p1-f3-side" class="function-node">?</div>
+            <div id="p1-f4-side" class="function-node">?</div>
         </div>
-        <div id="narration-panel">
-            <div id="narration-text"></div>
+
+        <div id="canvas-container">
+            <div id="analysis-overlay">
+                <div class="analysis-spinner"></div>
+                <div class="analysis-text">ANALYZING ENERGY...</div>
+            </div>
+            <div id="narration-panel">
+                <div id="narration-text"></div>
+            </div>
+        </div>
+
+        <div id="side-stack-B" class="side-stack" style="width: 80px;">
+            <div class="side-stack-label">P2 STACK</div>
+            <div id="p2-f1-side" class="function-node">?</div>
+            <div id="p2-f2-side" class="function-node">?</div>
+            <div id="p2-f3-side" class="function-node">?</div>
+            <div id="p2-f4-side" class="function-node">?</div>
         </div>
     </div>
 
@@ -817,28 +715,8 @@
                     </div>
                 </div>
 
-                <div class="complement-section">
-                    <div class="complement-title">Function Stack Complement</div>
-                    <div style="font-size: 10px; color: rgba(255,255,255,0.5); text-align: center; margin-top: -15px; margin-bottom: 20px;">
-                        Mirror補完：同じ役割で逆の視点を提供し合い、相乗効果を生む
-                    </div>
-                    <div class="stack-comparison">
-                        <div class="function-stack" id="stack-A">
-                            <div class="stack-label">P1 Stack</div>
-                            <div class="function-node" id="p1-f1">-</div>
-                            <div class="function-node" id="p1-f2">-</div>
-                            <div class="function-node" id="p1-f3">-</div>
-                            <div class="function-node" id="p1-f4">-</div>
-                        </div>
-                        <div class="stack-divider"></div>
-                        <div class="function-stack" id="stack-B">
-                            <div class="stack-label">P2 Stack</div>
-                            <div class="function-node" id="p2-f1">-</div>
-                            <div class="function-node" id="p2-f2">-</div>
-                            <div class="function-node" id="p2-f3">-</div>
-                            <div class="function-node" id="p2-f4">-</div>
-                        </div>
-                    </div>
+                <div id="score-narration-box" class="score-narration">
+                    ここに相性コメントが表示されます...
                 </div>
                 <div class="actions-grid">
                     <button class="share-btn" id="share-x-btn">
@@ -1111,13 +989,30 @@
         const scene = new THREE.Scene();
         scene.fog = new THREE.FogExp2(0x050510, 0.05);
 
-        const width = container.clientWidth;
-        const height = container.clientHeight;
+        const w_init = container.clientWidth || 800;
+        const h_init = container.clientHeight || 400;
 
-        const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+        const camera = new THREE.PerspectiveCamera(45, w_init / h_init, 0.1, 100);
         camera.position.set(0, 0, 15);
-
+        
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance", preserveDrawingBuffer: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        renderer.setSize(w_init, h_init);
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        container.appendChild(renderer.domElement);
+        
+        const composer = new EffectComposer(renderer);
+        const renderScene = new RenderPass(scene, camera);
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(w_init, h_init), 1.5, 0.4, 0.85);
+        bloomPass.threshold = 0.1;
+        bloomPass.strength = 1.2;
+        bloomPass.radius = 0.8;
+        composer.addPass(renderScene);
+        composer.addPass(bloomPass);
+        composer.setSize(w_init, h_init);
+
+        requestAnimationFrame(() => onWindowResize());
         
         // MBTI Nickname Mapping
         const mbtiNicknames = {
@@ -1158,27 +1053,10 @@
 
         // Performance limiters for mobile
         const pixelRatio = Math.min(window.devicePixelRatio, 1.5);
-        renderer.setPixelRatio(pixelRatio);
-        renderer.setSize(width, height);
-        renderer.toneMapping = THREE.ReinhardToneMapping;
-        renderer.toneMappingExposure = 1.0;
-        container.appendChild(renderer.domElement);
-
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
         controls.autoRotate = false;
-
-        // Post Processing (Bloom)
-        const renderScene = new RenderPass(scene, camera);
-        const bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), 1.5, 0.4, 0.85);
-        bloomPass.threshold = 0.1;
-        bloomPass.strength = 1.2; // Adjusted dynamically
-        bloomPass.radius = 0.8;
-
-        const composer = new EffectComposer(renderer);
-        composer.addPass(renderScene);
-        composer.addPass(bloomPass);
 
         // --- Visual Elements ---
         
@@ -1354,75 +1232,51 @@
                 const direction = new THREE.Vector3().subVectors(end, start);
                 const length = direction.length();
                 if (length < 0.01) return;
-
                 this.group.position.copy(start).add(direction.clone().multiplyScalar(0.5));
                 this.group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
                 this.group.scale.set(1, length, 1);
-
-                // Pulse core and glow
-                const pulse = 1.0 + Math.sin(time * 3.0) * 0.1 * this.data.s;
-                this.glow.scale.set(pulse, 1, pulse);
-                this.core.scale.set(1.0 + Math.sin(time * 5.0) * 0.05, 1, 1.0 + Math.sin(time * 5.0) * 0.05);
-
-                // Jitter
-                const jitter = Math.sin(time * 10.0 + length) * 0.002;
-                this.group.position.x += jitter;
+                const p = 1.0 + Math.sin(time * 3.0) * 0.1;
+                this.glow.scale.set(p, 1, p);
             }
         }
 
         function updateBeamsVisibility(t) {
             beamsGroup.clear();
             activeBeams = [];
-            
             const posA = sphereA.position;
             const posB = sphereB.position;
             const time = performance.now() / 1000;
-            
+            const maxBeams = 2;
+            let bCount = 0;
             complementData.forEach((c, idx) => {
-                let show = false;
-                if (state.timeline.phase === 'CORE' && idx < 2) show = true;
-                if (state.timeline.phase === 'SUB' && idx >= 2 && idx < 5) show = true;
-                if (state.timeline.phase === 'OVERVIEW' && idx < 6) show = true;
-                
+                if (bCount >= maxBeams) return;
+                let show = (state.timeline.phase === 'CORE' && idx === 0) || (state.timeline.phase === 'SUB' && idx < 2) || (state.timeline.phase === 'OVERVIEW' && idx < 2);
                 if (show) {
                     const vb = new VisualBeam(c);
-                    const start = c.from === 'A' ? posA : posB;
-                    const end = c.from === 'B' ? posA : posB;
-                    
-                    if (c.type === 'MIRROR') {
-                        // Oscillation of direction if mirror
-                        const flip = Math.sin(time * 2.0) > 0;
-                        const s = flip ? posA : posB;
-                        const e = flip ? posB : posA;
-                        vb.update(time, s, e);
-                        activeBeams.push({ beam: vb, start: s, end: e });
-                    } else {
-                        vb.update(time, start, end);
-                        activeBeams.push({ beam: vb, start, end });
-                    }
+                    const s = c.from === 'A' ? posA : posB;
+                    const e = c.from === 'B' ? posA : posB;
+                    vb.update(time, s, e);
+                    activeBeams.push({ beam: vb, start: s, end: e });
                     beamsGroup.add(vb.group);
+                    bCount++;
                 }
             });
-
-            // Update beam particles
             const positions = beamParticlesGeo.attributes.position.array;
             let pIdx = 0;
+            const dist = posA.distanceTo(posB) / SCALE;
+            const pLim = Math.floor(BEAM_PARTICLE_COUNT * Math.max(0.2, 1.0 - (dist / 2.5)));
             activeBeams.forEach(ab => {
                 const b = ab.beam;
-                const start = ab.start;
-                const end = ab.end;
+                const s = ab.start;
+                const e = ab.end;
                 b.particles.forEach(p => {
-                    if (pIdx < BEAM_PARTICLE_COUNT) {
+                    if (pIdx < pLim) {
                         p.t += p.speed;
                         if (p.t > 1.0) p.t = 0;
-                        
-                        const pos = new THREE.Vector3().lerpVectors(start, end, p.t);
-                        // Add slight orbital movement around beam
-                        const angle = time * 5 + p.t * 10;
-                        const r = 0.05;
-                        pos.x += Math.sin(angle) * r;
-                        pos.z += Math.cos(angle) * r;
-
+                        const pos = new THREE.Vector3().lerpVectors(s, e, p.t);
+                        const angle = time * 4 + p.t * 8;
+                        pos.x += Math.sin(angle) * 0.04;
+                        pos.z += Math.cos(angle) * 0.04;
                         positions[pIdx * 3] = pos.x;
                         positions[pIdx * 3 + 1] = pos.y;
                         positions[pIdx * 3 + 2] = pos.z;
@@ -1430,10 +1284,7 @@
                     }
                 });
             });
-            // Hide remaining particles
-            for(let i = pIdx; i < BEAM_PARTICLE_COUNT; i++) {
-                positions[i * 3] = 5000;
-            }
+            for(let i = pIdx; i < BEAM_PARTICLE_COUNT; i++) positions[i * 3] = 5000;
             beamParticlesGeo.attributes.position.needsUpdate = true;
             beamParticles.visible = activeBeams.length > 0;
         }
@@ -1447,37 +1298,31 @@
             const typeB = getMBTITypeString(uB);
             const stackA = getFunctionStack(typeA);
             const stackB = getFunctionStack(typeB);
-
             complementData = [];
             if (!stackA || !stackB) return;
-
-            const posStrength = [1.0, 0.8, 0.6, 0.4];
+            const strength = [1.0, 0.8, 0.6, 0.4];
             const weights = [1.3, 1.1, 0.9, 0.7];
-            
-            // E/I common energy
-            const energy = ( (100 - uA.EI) + (100 - uB.EI) ) / 200;
-
-            // 1. Rescue (Same function)
+            const energy = ((100 - uA.EI) + (100 - uB.EI)) / 200;
             for(let i=0; i<4; i++) {
                 for(let j=0; j<4; j++) {
                     if (stackA[i] === stackB[j]) {
-                        // A -> B
-                        const sAB = (1.0 - posStrength[j]) * posStrength[i] * weights[i];
-                        if (sAB > 0.05) complementData.push({ type: 'RESCUE', from: 'A', to: 'B', func: stackA[i], s: sAB, energy });
-                        
-                        // B -> A
-                        const sBA = (1.0 - posStrength[i]) * posStrength[j] * weights[j];
-                        if (sBA > 0.05) complementData.push({ type: 'RESCUE', from: 'B', to: 'A', func: stackB[j], s: sBA, energy });
+                        const sAB = (1.0 - strength[j]) * strength[i] * weights[i];
+                        const sBA = (1.0 - strength[i]) * strength[j] * weights[j];
+                        const totalS = sAB + sBA;
+                        if (totalS > 0.01) {
+                            complementData.push({ 
+                                type: 'RESCUE', from: sAB > sBA ? 'A' : 'B', func: stackA[i], 
+                                s: totalS, energy, idxA: i, idxB: j 
+                            });
+                        }
                     }
                 }
             }
-
-            // 2. Mirror (Reverse orientation)
             const isMirror = (f1, f2) => f1.substring(0, 1) === f2.substring(0, 1) && f1.substring(1, 2) !== f2.substring(1, 2);
             for(let i=0; i<4; i++) {
                 if (isMirror(stackA[i], stackB[i])) {
-                    const s = posStrength[i] * 0.8 * weights[i];
-                    complementData.push({ type: 'MIRROR', from: 'BOTH', funcA: stackA[i], funcB: stackB[i], s: s, energy });
+                    const s = strength[i] * 0.8 * weights[i];
+                    complementData.push({ type: 'MIRROR', from: 'BOTH', funcA: stackA[i], funcB: stackB[i], s: s, energy, idxA: i, idxB: i });
                 }
             }
             complementData.sort((a,b) => b.s - a.s);
@@ -1693,108 +1538,82 @@
             rankDisplay.textContent = rank;
             rankDisplay.style.color = rankColor;
             
-            // --- Complement Score Implementation ---
+            sphereA.visible = true;
+            const p2Untouched = isAllFifty(uB);
+            sphereB.visible = !p2Untouched;
+            line.visible = !p2Untouched;
+
             const stackA = getFunctionStack(typeStrA);
             const stackB = getFunctionStack(typeStrB);
-            
-            let compScore = 0;
+            const totalS = complementData.reduce((acc, c) => acc + c.s, 0) * 15;
+            let compScore = totalS;
             if (stackA && stackB) {
-                // Rescue patterns (Same function, different positions)
-                // (1)-(4): +40
-                if (stackA[0] === stackB[3]) compScore += 40;
-                if (stackB[0] === stackA[3]) compScore += 40;
-                
-                // (1)-(3): +25
-                if (stackA[0] === stackB[2]) compScore += 25;
-                if (stackB[0] === stackA[2]) compScore += 25;
-
-                // (2)-(4): +20
-                if (stackA[1] === stackB[3]) compScore += 20;
-                if (stackB[1] === stackA[3]) compScore += 20;
-
-                // (1)-(2): +15 (Rescue/Mild)
-                if (stackA[0] === stackB[1]) compScore += 15;
-                if (stackB[0] === stackA[1]) compScore += 15;
-
-                // (2)-(3): +12 (Mild)
-                if (stackA[1] === stackB[2]) compScore += 12;
-                if (stackB[1] === stackA[2]) compScore += 12;
-
-                // Mirror patterns (Same position, reverse orientation e.g. Ne vs Ni)
-                const isMirror = (f1, f2) => f1.substring(0, 1) === f2.substring(0, 1) && f1.substring(1, 2) !== f2.substring(1, 2);
-                for (let i = 0; i < 4; i++) {
-                    if (isMirror(stackA[i], stackB[i])) compScore += 10;
-                }
-                
-                // 2. Axis complementarity bonus
                 const getPerceptionAxis = (s) => (s.includes('Ni') || s.includes('Se')) ? 'NiSe' : 'NeSi';
                 const getJudgmentAxis = (s) => (s.includes('Ti') || s.includes('Fe')) ? 'TiFe' : 'TeFi';
-                
-                if (getPerceptionAxis(stackA) !== getPerceptionAxis(stackB)) compScore += 15;
-                if (getJudgmentAxis(stackA) !== getJudgmentAxis(stackB)) compScore += 15;
+                if (getPerceptionAxis(stackA) !== getPerceptionAxis(stackB)) compScore += 10;
+                if (getJudgmentAxis(stackA) !== getJudgmentAxis(stackB)) compScore += 10;
             }
-            
+            if (compScore > 0 && compScore < 1) compScore = 1;
             compScore = Math.min(100, compScore);
-            document.getElementById('comp-score-display').textContent = compScore;
-            
+            document.getElementById('comp-score-display').textContent = Math.round(compScore);
             let compRank = 'D';
             let compRankColor = '#e74c3c';
             if (compScore >= 80) { compRank = 'S+'; compRankColor = '#FFD700'; }
             else if (compScore >= 60) { compRank = 'A'; compRankColor = '#2ecc71'; }
             else if (compScore >= 40) { compRank = 'B'; compRankColor = '#3498db'; }
             else if (compScore >= 20) { compRank = 'C'; compRankColor = '#e67e22'; }
+            const crD = document.getElementById('comp-rank-display');
+            crD.textContent = compRank;
+            crD.style.color = compRankColor;
+            crD.style.boxShadow = `0 0 10px ${compRankColor}`;
             
-            const compRankDisplay = document.getElementById('comp-rank-display');
-            compRankDisplay.textContent = compRank;
-            compRankDisplay.style.color = compRankColor;
-            compRankDisplay.style.boxShadow = `0 0 10px ${compRankColor}`;
-
-            // Update Function Nodes
-            const updateNodes = (stack, pPrefix, otherStack) => {
-                for (let i = 0; i < 4; i++) {
-                    const node = document.getElementById(`${pPrefix}-f${i+1}`);
-                    if (stack) {
-                        const func = stack[i];
-                        node.textContent = func;
-                        node.className = 'function-node';
-                        
-                        if (otherStack) {
-                            const isMirror = (f1, f2) => f1.substring(0, 1) === f2.substring(0, 1) && f1.substring(1, 2) !== f2.substring(1, 2);
-                            
-                            // Rescue mapping (self, other) to aura priority
-                            const otherIdx = otherStack.indexOf(func);
-                            const selfIdx = i;
-
-                            // 1. Gold Rescue (Highest)
-                            if ((selfIdx === 0 && otherIdx === 3) || (selfIdx === 3 && otherIdx === 0)) {
-                                node.classList.add('aura-gold');
-                            } 
-                            // 2. Blue Rescue (Strong)
-                            else if ((selfIdx === 0 && otherIdx === 2) || (selfIdx === 2 && otherIdx === 0) || 
-                                     (selfIdx === 1 && otherIdx === 3) || (selfIdx === 3 && otherIdx === 1)) {
-                                node.classList.add('aura-blue');
-                            } 
-                            // 3. Green Rescue / Mild (Medium)
-                            else if ((selfIdx === 0 && otherIdx === 1) || (selfIdx === 1 && otherIdx === 0) ||
-                                     (selfIdx === 1 && otherIdx === 2) || (selfIdx === 2 && otherIdx === 1)) {
-                                node.classList.add('aura-green');
-                            }
-                            // 4. Mirror (Cyan) - Separate category
-                            else if (isMirror(func, otherStack[i])) {
-                                node.classList.add('aura-cyan');
-                            } 
-                            else {
-                                node.classList.add('aura-weak');
-                            }
-                        }
+            // SCORE Narrative Update
+            const narrBox = document.getElementById('score-narration-box');
+            if (narrBox) {
+                if (p2Untouched) {
+                    narrBox.innerHTML = `P2の性格を入力して、二人の関係性（相性スコア・補完関係）を解析しましょう。`;
+                } else {
+                    let text = `<strong>Distance Score: ${rank} <br>Complement Score: ${compRank}</strong><br><br>`;
+                    if (complementData.length > 0) {
+                        const c = complementData[0];
+                        const info = functionInfo[c.func || c.funcA];
+                        text += `【最大の補強ポイント】<br>${info.name} (${c.func || c.funcA})<br><span style='font-size: 11px; opacity: 0.8;'>${info.desc}</span>`;
                     } else {
-                        node.textContent = '-';
-                        node.className = 'function-node';
+                        text += `目立った補完関係は見られませんが、直感・現実などの軸での相互作用が独自の距離感を生み出しています。`;
                     }
+                    narrBox.innerHTML = text;
+                }
+            }
+
+            const updateNodes = (stack, pPrefix, cData) => {
+                for (let i = 0; i < 4; i++) {
+                    const node = document.getElementById(`${pPrefix}-f${i+1}-side`);
+                    const nodeOld = document.getElementById(`${pPrefix}-f${i+1}`);
+                    [node, nodeOld].forEach(n => {
+                        if (!n) return;
+                        if (stack) {
+                            n.textContent = stack[i];
+                            n.className = 'function-node dimmed';
+                            const phase = state.timeline.phase;
+                            cData.forEach((c, idx) => {
+                                let active = (phase === 'CORE' && idx === 0) || (phase === 'SUB' && idx < 3) || phase === 'OVERVIEW';
+                                if (active && ((pPrefix === 'p1' && c.idxA === i) || (pPrefix === 'p2' && c.idxB === i))) {
+                                    n.classList.remove('dimmed');
+                                    if (c.type === 'MIRROR') n.classList.add('glow-mirror');
+                                    else if (idx === 0) n.classList.add('glow-high');
+                                    else n.classList.add('glow-mid');
+                                }
+                            });
+                            if (phase === 'IDLE' || phase === 'INTRO' || phase === 'DIFF' || state.mode === 'EDITING') n.classList.remove('dimmed');
+                        } else {
+                            n.textContent = '-';
+                            n.className = 'function-node';
+                        }
+                    });
                 }
             };
-            updateNodes(stackA, 'p1', stackB);
-            updateNodes(stackB, 'p2', stackA);
+            updateNodes(stackA, 'p1', complementData);
+            updateNodes(p2Untouched ? null : stackB, 'p2', complementData);
             
             // Adjust bloom based on average E-I globally (optional juicy effect)
             const avgGlow = ((100 - uA.EI)/100 + (100 - uB.EI)/100) / 2;
@@ -1816,12 +1635,12 @@
         }
         window.addEventListener('resize', onWindowResize, false);
         function onWindowResize() {
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-            camera.aspect = width / height;
+            const w = Math.max(1, container.clientWidth);
+            const h = Math.max(1, container.clientHeight);
+            camera.aspect = w / h;
             camera.updateProjectionMatrix();
-            renderer.setSize(width, height);
-            composer.setSize(width, height);
+            renderer.setSize(w, h);
+            composer.setSize(w, h);
         }
 
         function updateParticles(delta) {
@@ -1866,6 +1685,10 @@
             );
             sphereA.position.copy(getPos(state.users.A));
             sphereB.position.copy(getPos(state.users.B));
+            const p2Untouched = isAllFifty(state.users.B);
+            sphereA.visible = true;
+            sphereB.visible = !p2Untouched;
+            line.visible = !p2Untouched;
 
             applyTurbulence(sphereA, state.users.A, 0);
             applyTurbulence(sphereB, state.users.B, 5);
