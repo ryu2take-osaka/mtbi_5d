@@ -1029,8 +1029,9 @@
             });
         });
 
-        const isAllFifty = (data) =>
-            data.EI === 50 && data.NS === 50 && data.TF === 50 && data.JP === 50 && data.AT === 50;
+        function isAllFifty(data) {
+            return data.EI === 50 && data.NS === 50 && data.TF === 50 && data.JP === 50 && data.AT === 50;
+        }
 
         function onInteraction() {
             state.mode = 'EDITING';
