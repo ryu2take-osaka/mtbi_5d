@@ -1645,6 +1645,7 @@
             sphereB.visible = !p2Untouched;
             line.visible = !p2Untouched;
 
+            calculateComplements(); // Always recalculate before UI sync so scores match currently set sliders
             const stackA = getFunctionStack(typeStrA);
             const stackB = getFunctionStack(typeStrB);
             const totalS = complementData.reduce((acc, c) => acc + c.s, 0) * 15;
