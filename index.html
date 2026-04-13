@@ -397,6 +397,21 @@
             background: rgba(255, 255, 255, 0.05);
         }
 
+        .function-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .function-lv {
+            font-size: 8px;
+            color: rgba(255, 255, 255, 0.45);
+            letter-spacing: 1px;
+            font-weight: 600;
+            font-family: 'Inter', monospace;
+        }
+
         .function-node.glow-high {
             border-color: #ffd700;
             box-shadow: 0 0 20px #ffd700, inset 0 0 10px #ffd700;
@@ -614,6 +629,14 @@
                 line-height: 35px;
             }
 
+            .function-slot {
+                gap: 1px;
+            }
+
+            .function-lv {
+                font-size: 7px;
+            }
+
             #narration-text {
                 font-size: 18px;
                 padding: 0 40px;
@@ -694,10 +717,10 @@
     <div id="visualizer-main">
         <div id="side-stack-A" class="side-stack" style="width: 80px;">
             <div class="side-stack-label">P1 STACK</div>
-            <div id="p1-f1-side" class="function-node">?</div>
-            <div id="p1-f2-side" class="function-node">?</div>
-            <div id="p1-f3-side" class="function-node">?</div>
-            <div id="p1-f4-side" class="function-node">?</div>
+            <div class="function-slot"><div id="p1-f1-side" class="function-node">?</div><div id="p1-f1-lv" class="function-lv">LV:0</div></div>
+            <div class="function-slot"><div id="p1-f2-side" class="function-node">?</div><div id="p1-f2-lv" class="function-lv">LV:0</div></div>
+            <div class="function-slot"><div id="p1-f3-side" class="function-node">?</div><div id="p1-f3-lv" class="function-lv">LV:0</div></div>
+            <div class="function-slot"><div id="p1-f4-side" class="function-node">?</div><div id="p1-f4-lv" class="function-lv">LV:0</div></div>
         </div>
 
         <div id="canvas-container">
@@ -712,10 +735,10 @@
 
         <div id="side-stack-B" class="side-stack" style="width: 80px;">
             <div class="side-stack-label">P2 STACK</div>
-            <div id="p2-f1-side" class="function-node">?</div>
-            <div id="p2-f2-side" class="function-node">?</div>
-            <div id="p2-f3-side" class="function-node">?</div>
-            <div id="p2-f4-side" class="function-node">?</div>
+            <div class="function-slot"><div id="p2-f1-side" class="function-node">?</div><div id="p2-f1-lv" class="function-lv">LV:0</div></div>
+            <div class="function-slot"><div id="p2-f2-side" class="function-node">?</div><div id="p2-f2-lv" class="function-lv">LV:0</div></div>
+            <div class="function-slot"><div id="p2-f3-side" class="function-node">?</div><div id="p2-f3-lv" class="function-lv">LV:0</div></div>
+            <div class="function-slot"><div id="p2-f4-side" class="function-node">?</div><div id="p2-f4-lv" class="function-lv">LV:0</div></div>
         </div>
     </div>
 
@@ -1176,6 +1199,26 @@
         function getFunctionStack(typeStr) {
             const base = typeStr.split('-')[0];
             return mbtiFunctionStacks[base] || null;
+        }
+
+        // Calculate spectrum levels (0-100) for each function in the stack
+        function getFunctionLevels(data, stack) {
+            if (!stack) return [0, 0, 0, 0];
+            const posWeight = [1.0, 0.75, 0.5, 0.25];
+            return stack.map((func, i) => {
+                const attitude = func.charAt(1); // 'i' or 'e'
+                const domain = func.charAt(0);   // 'N','S','T','F'
+                // Attitude: introverted functions benefit from higher EI, extraverted from lower
+                const attScore = attitude === 'i' ? data.EI : (100 - data.EI);
+                // Domain: N benefits from low NS, S from high NS, T from low TF, F from high TF
+                let domScore = 50;
+                if (domain === 'N') domScore = 100 - data.NS;
+                else if (domain === 'S') domScore = data.NS;
+                else if (domain === 'T') domScore = 100 - data.TF;
+                else if (domain === 'F') domScore = data.TF;
+                const rawLevel = posWeight[i] * ((attScore + domScore) / 2);
+                return Math.round(Math.max(0, Math.min(100, rawLevel)));
+            });
         }
 
         // Performance limiters for mobile
@@ -1722,10 +1765,12 @@
                 }
             }
 
-            const updateNodes = (stack, pPrefix, cData) => {
+            const updateNodes = (stack, pPrefix, cData, userData) => {
+                const levels = getFunctionLevels(userData, stack);
                 for (let i = 0; i < 4; i++) {
                     const node = document.getElementById(`${pPrefix}-f${i + 1}-side`);
                     const nodeOld = document.getElementById(`${pPrefix}-f${i + 1}`);
+                    const lvEl = document.getElementById(`${pPrefix}-f${i + 1}-lv`);
                     [node, nodeOld].forEach(n => {
                         if (!n) return;
                         if (stack) {
@@ -1747,10 +1792,13 @@
                             n.className = 'function-node';
                         }
                     });
+                    if (lvEl) {
+                        lvEl.textContent = stack ? `LV:${levels[i]}` : 'LV:0';
+                    }
                 }
             };
-            updateNodes(stackA, 'p1', complementData);
-            updateNodes(p2Untouched ? null : stackB, 'p2', complementData);
+            updateNodes(stackA, 'p1', complementData, uA);
+            updateNodes(p2Untouched ? null : stackB, 'p2', complementData, uB);
 
             // Adjust bloom based on average E-I globally (optional juicy effect)
             const avgGlow = ((100 - uA.EI) / 100 + (100 - uB.EI) / 100) / 2;
