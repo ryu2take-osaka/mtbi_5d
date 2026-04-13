@@ -1120,8 +1120,9 @@
         const camera = new THREE.PerspectiveCamera(45, w_init / h_init, 0.1, 100);
         camera.position.set(0, 0, 15);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance", preserveDrawingBuffer: true });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        const isMobile = window.innerWidth <= 768;
+        const renderer = new THREE.WebGLRenderer({ antialias: !isMobile, powerPreference: "high-performance", preserveDrawingBuffer: true });
+        renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 1.5));
         renderer.setSize(w_init, h_init);
         renderer.toneMapping = THREE.ReinhardToneMapping;
         renderer.toneMappingExposure = 1.0;
@@ -1129,10 +1130,11 @@
 
         const composer = new EffectComposer(renderer);
         const renderScene = new RenderPass(scene, camera);
-        const bloomPass = new UnrealBloomPass(new THREE.Vector2(w_init, h_init), 1.5, 0.4, 0.85);
-        bloomPass.threshold = 0.1;
-        bloomPass.strength = 1.2;
-        bloomPass.radius = 0.8;
+        const bloomRes = isMobile ? 128 : 256;
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(bloomRes, bloomRes), 1.5, 0.4, 0.85);
+        bloomPass.threshold = 0.2;
+        bloomPass.strength = 1.0;
+        bloomPass.radius = 0.5;
         composer.addPass(renderScene);
         composer.addPass(bloomPass);
         composer.setSize(w_init, h_init);
@@ -1203,22 +1205,19 @@
         const gridColorLine = 0x555566;
         const gridColorBg = 0x222233;
 
-        // XZ Plane (Floor)
-        const gridXZ = new THREE.GridHelper(BOX_SIZE, 10, gridColorLine, gridColorBg);
-        gridXZ.position.set(0, -SCALE, 0);
-        scene.add(gridXZ);
+        const gridHelper = new THREE.GridHelper(BOX_SIZE, isMobile ? 10 : 20, gridColorLine, gridColorBg);
+        gridHelper.position.y = -SCALE;
+        scene.add(gridHelper);
 
-        // XY Plane (Back wall)
-        const gridXY = new THREE.GridHelper(BOX_SIZE, 10, gridColorLine, gridColorBg);
-        gridXY.rotation.x = Math.PI / 2;
-        gridXY.position.set(0, 0, -SCALE);
-        scene.add(gridXY);
+        const gridLeft = new THREE.GridHelper(BOX_SIZE, isMobile ? 10 : 20, gridColorLine, gridColorBg);
+        gridLeft.rotation.z = Math.PI / 2;
+        gridLeft.position.x = -SCALE;
+        scene.add(gridLeft);
 
-        // YZ Plane (Side wall)
-        const gridYZ = new THREE.GridHelper(BOX_SIZE, 10, gridColorLine, gridColorBg);
-        gridYZ.rotation.z = Math.PI / 2;
-        gridYZ.position.set(-SCALE, 0, 0);
-        scene.add(gridYZ);
+        const gridBack = new THREE.GridHelper(BOX_SIZE, isMobile ? 10 : 20, gridColorLine, gridColorBg);
+        gridBack.rotation.x = Math.PI / 2;
+        gridBack.position.z = -SCALE;
+        scene.add(gridBack);
 
         // Axes (Replaced AxesHelper with thick Cylinders for better visibility)
         const axisRadius = 0.05; // Setting thickness explicitly
@@ -1295,7 +1294,7 @@
         scene.add(beamsGroup);
 
         // Particle System for Beams
-        const BEAM_PARTICLE_COUNT = 200;
+        const BEAM_PARTICLE_COUNT = isMobile ? 200 : 500;
         const beamParticlesGeo = new THREE.BufferGeometry();
         const beamParticlesPos = new Float32Array(BEAM_PARTICLE_COUNT * 3);
         beamParticlesGeo.setAttribute('position', new THREE.BufferAttribute(beamParticlesPos, 3));
@@ -1377,6 +1376,7 @@
                 if (bCount >= maxBeams) return;
                 let show = (state.timeline.phase === 'CORE' && idx === 0) || (state.timeline.phase === 'SUB' && idx < 2) || (state.timeline.phase === 'OVERVIEW' && idx < 2);
                 if (show) {
+                    const vb = new VisualBeam(c);
                     let s, e;
                     if (c.from === 'A') { s = posA; e = posB; }
                     else if (c.from === 'B') { s = posB; e = posA; }
