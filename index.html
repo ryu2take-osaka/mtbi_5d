@@ -575,6 +575,7 @@
 
         @media (max-width: 768px) {
             #visualizer-main {
+                flex: none;
                 height: 380px;
                 min-height: 380px;
                 flex-direction: column !important;
@@ -620,7 +621,9 @@
 
             #ui-panel {
                 padding: 12px 10px;
-                max-height: 60vh;
+                flex: 1;
+                min-height: 0;
+                max-height: none;
                 overflow-y: auto;
             }
 
