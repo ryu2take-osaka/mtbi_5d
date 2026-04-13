@@ -1408,14 +1408,23 @@
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 4; j++) {
                     if (stackA[i] === stackB[j]) {
-                        const sAB = (1.0 - strength[j]) * strength[i] * weights[i];
-                        const sBA = (1.0 - strength[i]) * strength[j] * weights[j];
-                        const totalS = sAB + sBA;
-                        if (totalS > 0.01) {
+                        if (i === j) {
+                            // Same position: Resonance (共鳴)
+                            const resScore = strength[i] * 1.5;
                             complementData.push({
-                                type: 'RESCUE', from: sAB > sBA ? 'A' : 'B', func: stackA[i],
-                                s: totalS, energy, idxA: i, idxB: j
+                                type: 'RESONANCE', from: 'BOTH', func: stackA[i],
+                                s: resScore, energy, idxA: i, idxB: j
                             });
+                        } else {
+                            const sAB = (1.0 - strength[j]) * strength[i] * weights[i];
+                            const sBA = (1.0 - strength[i]) * strength[j] * weights[j];
+                            const totalS = sAB + sBA;
+                            if (totalS > 0.01) {
+                                complementData.push({
+                                    type: 'RESCUE', from: sAB > sBA ? 'A' : 'B', func: stackA[i],
+                                    s: totalS, energy, idxA: i, idxB: j
+                                });
+                            }
                         }
                     }
                 }
@@ -1492,6 +1501,7 @@
                     showNarration(`総括：${rank}評価のパートナー性能`, `補完し合いながら進化し続ける関係です。`);
                     break;
             }
+            updateVisuals();
         }
 
         function initParticles() {
