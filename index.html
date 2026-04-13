@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -26,10 +27,10 @@
             width: 100%;
             height: 50vh;
             min-height: 350px;
-            background: rgba(0,0,0,0.2);
+            background: rgba(0, 0, 0, 0.2);
             position: relative;
             overflow: hidden;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         #canvas-container {
@@ -66,13 +67,13 @@
             font-size: 24px;
             font-weight: 800;
             letter-spacing: 1px;
-            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
 
         #header p {
             margin: 5px 0 0;
             font-size: 14px;
-            color: rgba(255,255,255,0.7);
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .main-ui {
@@ -207,7 +208,8 @@
             -webkit-appearance: none;
             appearance: none;
             margin: 0;
-            height: 8px; /* Make the input the height of the track */
+            height: 8px;
+            /* Make the input the height of the track */
             border-radius: 4px;
             /* Linear gradient directly on input for reliable CSS var usage */
             background: linear-gradient(to right, var(--track-color, #ccc) 0%, var(--track-color, #ccc) var(--val, 50%), rgba(255, 255, 255, 0.15) var(--val, 50%), rgba(255, 255, 255, 0.15) 100%);
@@ -236,9 +238,10 @@
             width: 20px;
             border-radius: 50%;
             background: #fff;
-            margin-top: -6px; /* Center thumb over 8px track (20-8)/2 = 6 */
+            margin-top: -6px;
+            /* Center thumb over 8px track (20-8)/2 = 6 */
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
             border: 2px solid var(--track-color, #ccc);
         }
 
@@ -248,18 +251,19 @@
             border-radius: 50%;
             background: #fff;
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
             border: 2px solid var(--track-color, #ccc);
         }
-        
+
         input[type=range]:focus {
             outline: none;
         }
 
         .slider-val {
-            display: none; /* Hide the simple value display */
+            display: none;
+            /* Hide the simple value display */
         }
-        
+
         .bold {
             font-weight: 800;
             color: #fff;
@@ -388,8 +392,8 @@
             position: relative;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            color: rgba(255,255,255,0.7);
-            background: rgba(255,255,255,0.05);
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .function-node.glow-high {
@@ -414,8 +418,17 @@
         }
 
         @keyframes pulse-mirror {
-            0%, 100% { border-color: #00ffff; box-shadow: 0 0 5px #00ffff; }
-            50% { border-color: #fff; box-shadow: 0 0 20px #00ffff; }
+
+            0%,
+            100% {
+                border-color: #00ffff;
+                box-shadow: 0 0 5px #00ffff;
+            }
+
+            50% {
+                border-color: #fff;
+                box-shadow: 0 0 20px #00ffff;
+            }
         }
 
         .function-node.dimmed {
@@ -436,7 +449,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(4px);
         }
-        
+
         #side-stack-A {
             left: 15px;
         }
@@ -448,7 +461,7 @@
         .side-stack-label {
             font-size: 9px;
             letter-spacing: 2px;
-            color: rgba(255,255,255,0.4);
+            color: rgba(255, 255, 255, 0.4);
             margin-bottom: 5px;
             white-space: nowrap;
         }
@@ -481,7 +494,10 @@
         /* vNext++ UI Elements */
         #analysis-overlay {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: rgba(5, 5, 16, 0.7);
             display: none;
             flex-direction: column;
@@ -509,8 +525,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         #narration-panel {
@@ -558,31 +579,90 @@
                 min-height: 380px;
                 flex-direction: column !important;
             }
+
             .side-stack {
                 top: 10px;
-                flex-direction: row;
+                flex-direction: column;
                 padding: 6px;
                 gap: 8px;
                 border-radius: 6px;
                 width: auto !important;
             }
-            #side-stack-A { left: 10px; }
-            #side-stack-B { right: 10px; }
-            .side-stack-label { display: none; }
+
+            .side-stack.row-sm {
+                flex-direction: column;
+            }
+
+            #side-stack-A {
+                left: 5px;
+            }
+
+            #side-stack-B {
+                right: 5px;
+            }
+
+            .side-stack-label {
+                display: none;
+            }
+
+            .function-node {
+                width: 35px;
+                height: 35px;
+                font-size: 13px;
+                line-height: 35px;
+            }
+
             #canvas-container {
                 height: 100%;
                 width: 100%;
                 flex: 1;
             }
+
             #ui-panel {
-                padding: 12px 20px;
+                padding: 12px 10px;
                 max-height: 60vh;
                 overflow-y: auto;
             }
-            .tab .mbti-type { display: none; }
-            .tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-            .score-row { flex-direction: column; }
-            #header { display: none; }
+
+            .tab .mbti-type {
+                display: none;
+            }
+
+            .tabs {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 8px;
+            }
+
+            .score-row {
+                flex-direction: row;
+                justify-content: space-between;
+                gap: 10px;
+                margin-bottom: 10px;
+            }
+
+            .score-box {
+                padding: 10px;
+                flex: 1;
+            }
+
+            .score-box .info-title {
+                font-size: 10px;
+                margin-bottom: 4px;
+            }
+
+            .score-box .score-value {
+                font-size: 28px;
+            }
+
+            .rank-badge {
+                font-size: 11px !important;
+                padding: 2px 8px !important;
+            }
+
+            #header {
+                display: none;
+            }
         }
     </style>
 
@@ -595,6 +675,7 @@
     }
     </script>
 </head>
+
 <body>
     <div id="header">
         <h1>MBTI 5D Visualizer</h1>
@@ -711,7 +792,8 @@
                     <div class="score-box">
                         <div class="info-title">Complement Score</div>
                         <div class="score-value" id="comp-score-display">0</div>
-                        <div class="rank-badge" id="comp-rank-display" style="font-size: 14px; padding: 2px 10px;">D</div>
+                        <div class="rank-badge" id="comp-rank-display" style="font-size: 14px; padding: 2px 10px;">D
+                        </div>
                     </div>
                 </div>
 
@@ -720,15 +802,27 @@
                 </div>
                 <div class="actions-grid">
                     <button class="share-btn" id="share-x-btn">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.007 4.126H5.078z"></path></svg>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path
+                                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.007 4.126H5.078z">
+                            </path>
+                        </svg>
                         ポスト
                     </button>
                     <button class="share-btn screenshot" id="screenshot-btn">
-                        <svg viewBox="0 0 24 24"><path d="M12 9c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm9-4h-4.17l-1.42-3h-6.82l-1.42 3h-4.17c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h18c1.103 0 2-.897 2-2v-12c0-1.103-.897-2-2-2zm-9 13c-3.309 0-6-2.691-6-6s2.691-6 6-6 6 2.691 6 6-2.691 6-6 6z"></path></svg>
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M12 9c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm9-4h-4.17l-1.42-3h-6.82l-1.42 3h-4.17c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h18c1.103 0 2-.897 2-2v-12c0-1.103-.897-2-2-2zm-9 13c-3.309 0-6-2.691-6-6s2.691-6 6-6 6 2.691 6 6-2.691 6-6 6z">
+                            </path>
+                        </svg>
                         保存
                     </button>
-                    <button class="share-btn" id="copy-url-btn" style="background: rgba(255,255,255,0.1); color: #fff; grid-column: span 2;">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 10h8M10 8v8m-6-3h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z"/></svg>
+                    <button class="share-btn" id="copy-url-btn"
+                        style="background: rgba(255,255,255,0.1); color: #fff; grid-column: span 2;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path
+                                d="M8 10h8M10 8v8m-6-3h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z" />
+                        </svg>
                         URLをコピー
                     </button>
                 </div>
@@ -781,21 +875,21 @@
             try {
                 const str = atob(b64);
                 if (str.length !== 10) return;
-                
+
                 const arr = new Uint8Array(10);
-                for(let i = 0; i < 10; i++) {
+                for (let i = 0; i < 10; i++) {
                     const val = str.charCodeAt(i);
                     // Invalid detection
                     if (val < 0 || val > 100 || isNaN(val)) return;
                     arr[i] = val;
                 }
-                
+
                 const keys = ['EI', 'NS', 'TF', 'JP', 'AT'];
                 keys.forEach((k, i) => {
                     state.users.A[k] = arr[i];
-                    state.users.B[k] = arr[i+5];
+                    state.users.B[k] = arr[i + 5];
                 });
-            } catch(e) {
+            } catch (e) {
                 // Ignore decoding errs and fallback to init state
             }
         }
@@ -805,7 +899,7 @@
             const arr = new Uint8Array(10);
             keys.forEach((k, i) => {
                 arr[i] = state.users.A[k];
-                arr[i+5] = state.users.B[k];
+                arr[i + 5] = state.users.B[k];
             });
             // Convert to base64 via string
             return btoa(String.fromCharCode.apply(null, arr));
@@ -815,6 +909,10 @@
         const params = new URLSearchParams(window.location.search);
         if (params.has('d')) {
             decodeStateFromBase64(params.get('d'));
+            if (!isAllFifty(state.users.A) && !isAllFifty(state.users.B)) {
+                state.mode = 'EDITING'; // Trigger auto-analysis on boot
+                state.lastInteraction = -1000;
+            }
         }
 
         // UI Elements
@@ -865,10 +963,10 @@
             const r = labels[key].R;
             const txtL = labels[key].txtL;
             const txtR = labels[key].txtR;
-            
+
             l.className = '';
             r.className = '';
-            
+
             if (val < 50) {
                 l.classList.add('bold');
                 l.textContent = (100 - val) + '% ' + txtL;
@@ -889,7 +987,7 @@
                 const target = tab.getAttribute('data-target');
                 tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                
+
                 // Switch Panels
                 document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
                 if (target === 'SCORE') {
@@ -931,7 +1029,7 @@
             });
         });
 
-        const isAllFifty = (data) => 
+        const isAllFifty = (data) =>
             data.EI === 50 && data.NS === 50 && data.TF === 50 && data.JP === 50 && data.AT === 50;
 
         function onInteraction() {
@@ -946,14 +1044,14 @@
             const b64 = encodeStateToBase64();
             const baseUrl = window.location.origin + window.location.pathname;
             const url = `${baseUrl}?d=${encodeURIComponent(b64)}`;
-            
+
             const dist = document.getElementById('score-display').textContent;
             const comp = document.getElementById('comp-score-display').textContent;
             const rankD = document.getElementById('rank-display').textContent;
             const rankC = document.getElementById('comp-rank-display').textContent;
 
             const text = `MBTI 5D Visualizer\n性格の「近さ」と「補完関係」を可視化\n\nDistance: ${dist} (${rankD})\nComplement: ${comp} (${rankC})\n\n結果をチェック：\n${url}`;
-            
+
             window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
         });
 
@@ -974,7 +1072,7 @@
             const b64 = encodeStateToBase64();
             const baseUrl = window.location.origin + window.location.pathname;
             const url = `${baseUrl}?d=${encodeURIComponent(b64)}`;
-            
+
             navigator.clipboard.writeText(url).then(() => {
                 const toast = document.getElementById('copy-toast');
                 toast.style.opacity = '1';
@@ -994,14 +1092,14 @@
 
         const camera = new THREE.PerspectiveCamera(45, w_init / h_init, 0.1, 100);
         camera.position.set(0, 0, 15);
-        
+
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance", preserveDrawingBuffer: true });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         renderer.setSize(w_init, h_init);
         renderer.toneMapping = THREE.ReinhardToneMapping;
         renderer.toneMappingExposure = 1.0;
         container.appendChild(renderer.domElement);
-        
+
         const composer = new EffectComposer(renderer);
         const renderScene = new RenderPass(scene, camera);
         const bloomPass = new UnrealBloomPass(new THREE.Vector2(w_init, h_init), 1.5, 0.4, 0.85);
@@ -1013,7 +1111,7 @@
         composer.setSize(w_init, h_init);
 
         requestAnimationFrame(() => onWindowResize());
-        
+
         // MBTI Nickname Mapping
         const mbtiNicknames = {
             'INTJ': '建築家', 'INTP': '論理学者', 'ENTJ': '指揮官', 'ENTP': '討論者',
@@ -1059,7 +1157,7 @@
         controls.autoRotate = false;
 
         // --- Visual Elements ---
-        
+
         // MBTI Type logic
         function getMBTITypeString(data) {
             if (data.EI === 50 && data.NS === 50 && data.TF === 50 && data.JP === 50 && data.AT === 50) return "XXXX-X";
@@ -1073,7 +1171,7 @@
 
         const SCALE = 4.0;
         const BOX_SIZE = SCALE * 2;
-        
+
         // 3D Matrix / Grids mapping corners (Floor, Left Wall, Right Wall)
         const gridColorLine = 0x555566;
         const gridColorBg = 0x222233;
@@ -1151,7 +1249,7 @@
 
         // Particles reduction (mobile optimization: 16, 16 segments)
         const sphereGeo = new THREE.SphereGeometry(1, 12, 12);
-        
+
         const createSphereMat = () => new THREE.MeshStandardMaterial({
             color: 0xffffff,
             emissive: 0xffffff,
@@ -1193,7 +1291,7 @@
                 this.data = data; // from, to, type, s, energy
                 this.group = new THREE.Group();
                 const color = data.type === 'RESCUE' ? 0xFFD700 : 0x00FFFF;
-                
+
                 const s = data.s;
                 const opacity = 0.4 + 0.6 * s;
 
@@ -1223,7 +1321,7 @@
 
                 this.particles = [];
                 const pCount = Math.floor(10 + s * 20);
-                for(let i=0; i<pCount; i++) {
+                for (let i = 0; i < pCount; i++) {
                     this.particles.push({ t: Math.random(), speed: 0.005 + Math.random() * 0.01 });
                 }
             }
@@ -1284,7 +1382,7 @@
                     }
                 });
             });
-            for(let i = pIdx; i < BEAM_PARTICLE_COUNT; i++) positions[i * 3] = 5000;
+            for (let i = pIdx; i < BEAM_PARTICLE_COUNT; i++) positions[i * 3] = 5000;
             beamParticlesGeo.attributes.position.needsUpdate = true;
             beamParticles.visible = activeBeams.length > 0;
         }
@@ -1303,29 +1401,29 @@
             const strength = [1.0, 0.8, 0.6, 0.4];
             const weights = [1.3, 1.1, 0.9, 0.7];
             const energy = ((100 - uA.EI) + (100 - uB.EI)) / 200;
-            for(let i=0; i<4; i++) {
-                for(let j=0; j<4; j++) {
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
                     if (stackA[i] === stackB[j]) {
                         const sAB = (1.0 - strength[j]) * strength[i] * weights[i];
                         const sBA = (1.0 - strength[i]) * strength[j] * weights[j];
                         const totalS = sAB + sBA;
                         if (totalS > 0.01) {
-                            complementData.push({ 
-                                type: 'RESCUE', from: sAB > sBA ? 'A' : 'B', func: stackA[i], 
-                                s: totalS, energy, idxA: i, idxB: j 
+                            complementData.push({
+                                type: 'RESCUE', from: sAB > sBA ? 'A' : 'B', func: stackA[i],
+                                s: totalS, energy, idxA: i, idxB: j
                             });
                         }
                     }
                 }
             }
             const isMirror = (f1, f2) => f1.substring(0, 1) === f2.substring(0, 1) && f1.substring(1, 2) !== f2.substring(1, 2);
-            for(let i=0; i<4; i++) {
+            for (let i = 0; i < 4; i++) {
                 if (isMirror(stackA[i], stackB[i])) {
                     const s = strength[i] * 0.8 * weights[i];
                     complementData.push({ type: 'MIRROR', from: 'BOTH', funcA: stackA[i], funcB: stackB[i], s: s, energy, idxA: i, idxB: i });
                 }
             }
-            complementData.sort((a,b) => b.s - a.s);
+            complementData.sort((a, b) => b.s - a.s);
         }
 
         // --- Narrator System ---
@@ -1365,7 +1463,7 @@
             const uB = state.users.B;
             const rank = document.getElementById('rank-display').textContent;
 
-            switch(phase) {
+            switch (phase) {
                 case 'INTRO':
                     showNarration(`あなたたちは「${rank}ランク」の関係です。`, `互いのエネルギーがどのように巡るか解析します。`);
                     break;
@@ -1405,11 +1503,11 @@
         scene.add(dirLight);
 
         // Connecting Line
-        const lineMat = new THREE.LineBasicMaterial({ 
-            color: 0xffffff, 
-            transparent: true, 
+        const lineMat = new THREE.LineBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
             opacity: 0.5,
-            blending: THREE.AdditiveBlending 
+            blending: THREE.AdditiveBlending
         });
         const lineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
         const line = new THREE.Line(lineGeo, lineMat);
@@ -1420,7 +1518,7 @@
             const matX = new THREE.LineDashedMaterial({ color: 0xE4AE3A, transparent: true, opacity: 0.6, dashSize: 0.2, gapSize: 0.1 }); // NS
             const matY = new THREE.LineDashedMaterial({ color: 0x33A474, transparent: true, opacity: 0.6, dashSize: 0.2, gapSize: 0.1 }); // TF
             const matZ = new THREE.LineDashedMaterial({ color: 0x8A61A6, transparent: true, opacity: 0.6, dashSize: 0.2, gapSize: 0.1 }); // JP
-            
+
             const lines = {
                 x: new THREE.Line(new THREE.BufferGeometry(), matX),
                 y: new THREE.Line(new THREE.BufferGeometry(), matY),
@@ -1473,7 +1571,7 @@
             function updateGuides(guides, pos, visible) {
                 guides.x.visible = guides.y.visible = guides.z.visible = visible;
                 if (!visible) return;
-                
+
                 // X (NS) guide to left wall
                 guides.x.geometry.setFromPoints([pos, new THREE.Vector3(-SCALE, pos.y, pos.z)]);
                 guides.x.computeLineDistances();
@@ -1511,8 +1609,8 @@
             // 3. Logic & Compatibility
             // Distance between normalized coords (-1 to 1 means max distance per axis is 2)
             // Normalized positions distance = dist / SCALE
-            const distance = sphereA.position.distanceTo(sphereB.position) / SCALE; 
-            
+            const distance = sphereA.position.distanceTo(sphereB.position) / SCALE;
+
             // Score = (1 - (D/3)) * 100 -- based on spec
             let score = (1.0 - (distance / 3.0)) * 100;
             score = Math.max(0, Math.min(100, score));
@@ -1537,7 +1635,7 @@
 
             rankDisplay.textContent = rank;
             rankDisplay.style.color = rankColor;
-            
+
             sphereA.visible = true;
             const p2Untouched = isAllFifty(uB);
             sphereB.visible = !p2Untouched;
@@ -1566,7 +1664,7 @@
             crD.textContent = compRank;
             crD.style.color = compRankColor;
             crD.style.boxShadow = `0 0 10px ${compRankColor}`;
-            
+
             // SCORE Narrative Update
             const narrBox = document.getElementById('score-narration-box');
             if (narrBox) {
@@ -1587,8 +1685,8 @@
 
             const updateNodes = (stack, pPrefix, cData) => {
                 for (let i = 0; i < 4; i++) {
-                    const node = document.getElementById(`${pPrefix}-f${i+1}-side`);
-                    const nodeOld = document.getElementById(`${pPrefix}-f${i+1}`);
+                    const node = document.getElementById(`${pPrefix}-f${i + 1}-side`);
+                    const nodeOld = document.getElementById(`${pPrefix}-f${i + 1}`);
                     [node, nodeOld].forEach(n => {
                         if (!n) return;
                         if (stack) {
@@ -1614,9 +1712,9 @@
             };
             updateNodes(stackA, 'p1', complementData);
             updateNodes(p2Untouched ? null : stackB, 'p2', complementData);
-            
+
             // Adjust bloom based on average E-I globally (optional juicy effect)
-            const avgGlow = ((100 - uA.EI)/100 + (100 - uB.EI)/100) / 2;
+            const avgGlow = ((100 - uA.EI) / 100 + (100 - uB.EI) / 100) / 2;
             bloomPass.strength = 0.5 + avgGlow * 1.5;
         }
 
@@ -1676,7 +1774,7 @@
                     }
                 }
             }
-            
+
             // Clear base positions
             const getPos = (data) => new THREE.Vector3(
                 ((data.NS - 50) / 50) * SCALE,
@@ -1692,15 +1790,15 @@
 
             applyTurbulence(sphereA, state.users.A, 0);
             applyTurbulence(sphereB, state.users.B, 5);
-            
+
             lineGeo.setFromPoints([sphereA.position, sphereB.position]);
-            
+
             if (state.mode === 'PLAYING') {
                 updateTimeline(delta);
             } else {
                 beamsGroup.clear();
             }
-            
+
             controls.update();
             composer.render();
         }
@@ -1711,4 +1809,5 @@
 
     </script>
 </body>
+
 </html>
