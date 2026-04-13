@@ -1357,11 +1357,9 @@
 
         class VisualBeam {
             constructor(data) {
-                this.data = data;
+                this.data = data; // from, to, type, s, energy
                 this.group = new THREE.Group();
-                // Color per type: RESCUE=gold, MIRROR=cyan, RESONANCE=magenta, EXPANSION=green
-                const colorMap = { RESCUE: 0xFFD700, MIRROR: 0x00FFFF, RESONANCE: 0xFF44FF, EXPANSION: 0x44FF88 };
-                const color = colorMap[data.type] || 0xFFFFFF;
+                const color = data.type === 'RESCUE' ? 0xFFD700 : 0x00FFFF;
 
                 const s = data.s;
                 const opacity = 0.4 + 0.6 * s;
@@ -1419,7 +1417,6 @@
             let bCount = 0;
             complementData.forEach((c, idx) => {
                 if (bCount >= maxBeams) return;
-                if (c.idxA === -1) return; // EXPANSION is stack-level, no 3D beam
                 let show = (state.timeline.phase === 'CORE' && idx === 0) || (state.timeline.phase === 'SUB' && idx < 2) || (state.timeline.phase === 'OVERVIEW' && idx < 2);
                 if (show) {
                     const vb = new VisualBeam(c);
@@ -1472,64 +1469,26 @@
             const stackB = getFunctionStack(typeB);
             complementData = [];
             if (!stackA || !stackB) return;
-
-            // Position strength (dominant→inferior): how "developed" each slot is
             const strength = [1.0, 0.8, 0.6, 0.4];
-            // Position weight multiplier: favours higher-stack interactions
-            // weights = [1.3, 1.1, 0.9, 0.7] per spec
             const weights = [1.3, 1.1, 0.9, 0.7];
             const energy = ((100 - uA.EI) + (100 - uB.EI)) / 200;
-
-            // Helper: attitude letter ('i' or 'e')
-            const attitude = f => f.charAt(1);
-            // Helper: domain letter ('N','S','T','F')
-            const domain = f => f.charAt(0);
-            // Helper: opposite attitude
-            const oppositeAttitude = f => attitude(f) === 'i' ? 'e' : 'i';
-            // Helper: perception or judgment axis group
-            const percAxis = stack => (stack.includes('Ni') || stack.includes('Se')) ? 'NiSe' : 'NeSi';
-            const judgAxis = stack => (stack.includes('Ti') || stack.includes('Fe')) ? 'TiFe' : 'TeFi';
-
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 4; j++) {
-                    const fA = stackA[i];
-                    const fB = stackB[j];
-
-                    if (i === j) {
-                        if (fA === fB) {
-                            // ① RESONANCE: Same position, same function
-                            //   Both parties reinforce identical cognitive mode
-                            //   Score = strength[i] * 1.5 * weight[i]  (amplification bonus)
-                            const s = strength[i] * 1.5 * weights[i];
+                    if (stackA[i] === stackB[j]) {
+                        if (i === j) {
+                            // Same position: Resonance (共鳴)
+                            const resScore = strength[i] * 1.5;
                             complementData.push({
-                                type: 'RESONANCE', priority: 1,
-                                from: 'BOTH', func: fA,
-                                s, energy, idxA: i, idxB: j
+                                type: 'RESONANCE', from: 'BOTH', func: stackA[i],
+                                s: resScore, energy, idxA: i, idxB: j
                             });
-                        } else if (domain(fA) === domain(fB) && attitude(fA) !== attitude(fB)) {
-                            // ② MIRROR: Same position, same domain, opposite attitude
-                            //   e.g. Ne(i=0) ↔ Ni(j=0)  /  Ti(i=0) ↔ Te(j=0)
-                            //   Score = strength[i] * 0.9 * weight[i]
-                            const s = strength[i] * 0.9 * weights[i];
-                            complementData.push({
-                                type: 'MIRROR', priority: 2,
-                                from: 'BOTH', funcA: fA, funcB: fB, func: fA,
-                                s, energy, idxA: i, idxB: j
-                            });
-                        }
-                    } else {
-                        if (fA === fB) {
-                            // ③ RESCUE: Different positions, same function
-                            //   One party's weakness is covered by the other's strength
-                            //   S(A→B) = (1 - B_strength) * A_strength * A_weight
-                            //   S(B→A) = (1 - A_strength) * B_strength * B_weight
+                        } else {
                             const sAB = (1.0 - strength[j]) * strength[i] * weights[i];
                             const sBA = (1.0 - strength[i]) * strength[j] * weights[j];
                             const totalS = sAB + sBA;
                             if (totalS > 0.01) {
                                 complementData.push({
-                                    type: 'RESCUE', priority: 3,
-                                    from: sAB > sBA ? 'A' : 'B', func: fA,
+                                    type: 'RESCUE', from: sAB > sBA ? 'A' : 'B', func: stackA[i],
                                     s: totalS, energy, idxA: i, idxB: j
                                 });
                             }
@@ -1537,29 +1496,14 @@
                     }
                 }
             }
-
-            // ④ EXPANSION: Different perception axes AND different judgment axes
-            //   Entire stack-level axis complementarity (cross-type synergy)
-            //   Awarded once per pair, not per position
-            const diffPerc = percAxis(stackA) !== percAxis(stackB);
-            const diffJudg = judgAxis(stackA) !== judgAxis(stackB);
-            if (diffPerc) {
-                complementData.push({
-                    type: 'EXPANSION', priority: 4,
-                    from: 'BOTH', func: 'PERC',
-                    s: 0.55, energy, idxA: -1, idxB: -1
-                });
+            const isMirror = (f1, f2) => f1.substring(0, 1) === f2.substring(0, 1) && f1.substring(1, 2) !== f2.substring(1, 2);
+            for (let i = 0; i < 4; i++) {
+                if (isMirror(stackA[i], stackB[i])) {
+                    const s = strength[i] * 0.8 * weights[i];
+                    complementData.push({ type: 'MIRROR', from: 'BOTH', funcA: stackA[i], funcB: stackB[i], s: s, energy, idxA: i, idxB: i });
+                }
             }
-            if (diffJudg) {
-                complementData.push({
-                    type: 'EXPANSION', priority: 4,
-                    from: 'BOTH', func: 'JUDG',
-                    s: 0.45, energy, idxA: -1, idxB: -1
-                });
-            }
-
-            // Sort: primary = priority (lower = better), secondary = score descending
-            complementData.sort((a, b) => a.priority !== b.priority ? a.priority - b.priority : b.s - a.s);
+            complementData.sort((a, b) => b.s - a.s);
         }
 
         // --- Narrator System ---
@@ -1779,11 +1723,18 @@
             line.visible = !p2Untouched;
 
             calculateComplements(); // Always recalculate before UI sync so scores match currently set sliders
-            // compScore: sum of all complement scores * scale factor
-            // EXPANSION entries (s≈0.55/0.45) are already included in complementData
-            // Scale factor 14 chosen so max theoretical score ≈ 100
-            const totalS = complementData.reduce((acc, c) => acc + c.s, 0);
-            let compScore = Math.max(0, Math.min(100, totalS * 14));
+            const stackA = getFunctionStack(typeStrA);
+            const stackB = getFunctionStack(typeStrB);
+            const totalS = complementData.reduce((acc, c) => acc + c.s, 0) * 15;
+            let compScore = totalS;
+            if (stackA && stackB) {
+                const getPerceptionAxis = (s) => (s.includes('Ni') || s.includes('Se')) ? 'NiSe' : 'NeSi';
+                const getJudgmentAxis = (s) => (s.includes('Ti') || s.includes('Fe')) ? 'TiFe' : 'TeFi';
+                if (getPerceptionAxis(stackA) !== getPerceptionAxis(stackB)) compScore += 10;
+                if (getJudgmentAxis(stackA) !== getJudgmentAxis(stackB)) compScore += 10;
+            }
+            if (compScore > 0 && compScore < 1) compScore = 1;
+            compScore = Math.min(100, compScore);
             document.getElementById('comp-score-display').textContent = Math.round(compScore);
             let compRank = 'D';
             let compRankColor = '#e74c3c';
