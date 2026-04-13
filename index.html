@@ -613,6 +613,11 @@
                 line-height: 35px;
             }
 
+            #narration-text {
+                font-size: 18px;
+                padding: 0 40px;
+            }
+
             #canvas-container {
                 height: 100%;
                 width: 100%;
@@ -1354,9 +1359,10 @@
                 if (bCount >= maxBeams) return;
                 let show = (state.timeline.phase === 'CORE' && idx === 0) || (state.timeline.phase === 'SUB' && idx < 2) || (state.timeline.phase === 'OVERVIEW' && idx < 2);
                 if (show) {
-                    const vb = new VisualBeam(c);
-                    const s = c.from === 'A' ? posA : posB;
-                    const e = c.from === 'B' ? posA : posB;
+                    let s, e;
+                    if (c.from === 'A') { s = posA; e = posB; }
+                    else if (c.from === 'B') { s = posB; e = posA; }
+                    else { s = posA; e = posB; } // BOTH or RESONANCE
                     vb.update(time, s, e);
                     activeBeams.push({ beam: vb, start: s, end: e });
                     beamsGroup.add(vb.group);
