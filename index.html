@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MBTI 5D Visualizer (Interactive Engine)</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
 
@@ -1066,14 +1067,31 @@
 
         // Screenshot functionality
         document.getElementById('screenshot-btn').addEventListener('click', () => {
-            // Render one frame specifically for the capture
+            const btn = document.getElementById('screenshot-btn');
+            const originalContent = btn.innerHTML;
+            btn.textContent = '保存中...';
+
+            // Ensure WebGL is rendered
             composer.render();
-            const link = document.createElement('a');
-            const typeA = getMBTITypeString(state.users.A);
-            const typeB = getMBTITypeString(state.users.B);
-            link.download = `mbti_5d_${typeA}_${typeB}.png`;
-            link.href = renderer.domElement.toDataURL('image/png');
-            link.click();
+
+            html2canvas(document.body, {
+                backgroundColor: '#050510',
+                scale: window.devicePixelRatio || 1,
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                const typeA = getMBTITypeString(state.users.A);
+                const typeB = getMBTITypeString(state.users.B);
+                link.download = `mbti_5d_${typeA}_${typeB}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                btn.innerHTML = originalContent;
+            }).catch(err => {
+                console.error('Screenshot failed:', err);
+                btn.innerHTML = originalContent;
+                alert('スクリーンショットの保存に失敗しました。');
+            });
         });
 
         // Copy URL

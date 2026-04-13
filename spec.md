@@ -108,6 +108,7 @@ Ni：内向的直観 / Ne：外向直観 / Si：内向感覚 / Se：外向感覚
 
 ## 6. 技術スタック
 - **Three.js**: WebGL渲染およびビーム演出。
+- **html2canvas**: 全画面（UI込）のスクリーンショット機能。
 - **State Machine**: EDITING/PLAYING状態の管理。
 - **Deployment**: GitHub Pages
 
