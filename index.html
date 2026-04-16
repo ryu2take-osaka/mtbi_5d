@@ -391,10 +391,19 @@
             font-size: 13px;
             font-weight: 800;
             position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            color: rgba(255, 255, 255, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+            color: #fff;
             background: rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            /* Water level fill using gradient */
+            background-image: linear-gradient(to top, var(--fill-color, rgba(255,255,255,0.2)) var(--fill, 0%), transparent var(--fill, 0%));
+        }
+
+        .function-node span {
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 4px rgba(0,0,0,0.8);
         }
 
         .function-slot {
@@ -406,45 +415,36 @@
 
         .function-lv {
             font-size: 8px;
-            color: rgba(255, 255, 255, 0.45);
-            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 0.5px;
             font-weight: 600;
             font-family: 'Inter', monospace;
         }
 
         .function-node.glow-high {
             border-color: #ffd700;
-            box-shadow: 0 0 20px #ffd700, inset 0 0 10px #ffd700;
-            color: #fff;
-            background: rgba(255, 215, 0, 0.3);
-            opacity: 1 !important;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
         }
 
         .function-node.glow-mid {
             border-color: #00bfff;
-            box-shadow: 0 0 15px #00bfff;
-            color: #fff;
-            background: rgba(0, 191, 255, 0.2);
-            opacity: 1 !important;
+            box-shadow: 0 0 10px rgba(0, 191, 255, 0.4);
         }
 
         .function-node.glow-mirror {
-            animation: pulse-mirror 2s infinite;
-            opacity: 1 !important;
+            border-color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
         }
 
-        @keyframes pulse-mirror {
+        .mirror-icon {
+            font-size: 0.8em;
+            vertical-align: middle;
+            margin-left: 4px;
+            display: none;
+        }
 
-            0%,
-            100% {
-                border-color: #00ffff;
-                box-shadow: 0 0 5px #00ffff;
-            }
-
-            50% {
-                border-color: #fff;
-                box-shadow: 0 0 20px #00ffff;
-            }
+        .mirror-active .mirror-icon {
+            display: inline-block;
         }
 
         .function-node.dimmed {
@@ -821,11 +821,10 @@
                         <div class="score-value" id="score-display">100</div>
                         <div class="rank-badge" id="rank-display" style="font-size: 14px; padding: 2px 10px;">S</div>
                     </div>
-                    <div class="score-box">
+                    <div class="score-box" id="comp-score-box">
                         <div class="info-title">Complement Score</div>
-                        <div class="score-value" id="comp-score-display">0</div>
-                        <div class="rank-badge" id="comp-rank-display" style="font-size: 14px; padding: 2px 10px;">D
-                        </div>
+                        <div class="score-value"><span id="comp-score-display">0</span><span class="mirror-icon">🔁</span></div>
+                        <div class="rank-badge" id="comp-rank-display" style="font-size: 14px; padding: 2px 10px;">D</div>
                     </div>
                 </div>
 
@@ -1336,63 +1335,28 @@
         const beamsGroup = new THREE.Group();
         scene.add(beamsGroup);
 
-        // Particle System for Beams
-        const BEAM_PARTICLE_COUNT = isMobile ? 200 : 500;
-        const beamParticlesGeo = new THREE.BufferGeometry();
-        const beamParticlesPos = new Float32Array(BEAM_PARTICLE_COUNT * 3);
-        beamParticlesGeo.setAttribute('position', new THREE.BufferAttribute(beamParticlesPos, 3));
-        const beamParticlesMat = new THREE.PointsMaterial({
-            size: 0.05,
-            transparent: true,
-            opacity: 0.8,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            color: 0xffffff,
-            map: new THREE.TextureLoader().load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/sprites/circle.png')
-        });
-        const beamParticles = new THREE.Points(beamParticlesGeo, beamParticlesMat);
-        scene.add(beamParticles);
-
+        // Particle System for Beams (Removed for performance and static look)
         let activeBeams = [];
 
         class VisualBeam {
             constructor(data) {
-                this.data = data; // from, to, type, s, energy
+                this.data = data; // from, to, type, s
                 this.group = new THREE.Group();
-                const color = data.type === 'RESCUE' ? 0xFFD700 : 0x00FFFF;
+                const color = data.type === 'MIRROR' ? 0x00FFFF : 0xFFD700;
+                const opacity = 0.6;
 
-                const s = data.s;
-                const opacity = 0.4 + 0.6 * s;
-
-                // 1. Core
-                const coreRadius = 0.01 + 0.03 * s;
-                this.core = new THREE.Mesh(
-                    new THREE.CylinderGeometry(coreRadius, coreRadius, 1, 8),
-                    new THREE.MeshStandardMaterial({
-                        color: color, emissive: color, emissiveIntensity: 3.0,
-                        transparent: true, opacity: opacity,
-                        blending: THREE.AdditiveBlending, depthWrite: false
+                // Simple static cylinder line
+                const radius = 0.02;
+                this.line = new THREE.Mesh(
+                    new THREE.CylinderGeometry(radius, radius, 1, 6),
+                    new THREE.MeshBasicMaterial({
+                        color: color,
+                        transparent: true,
+                        opacity: opacity,
+                        depthWrite: false
                     })
                 );
-                this.group.add(this.core);
-
-                // 2. Glow
-                const glowRadius = 0.03 + 0.08 * s;
-                this.glow = new THREE.Mesh(
-                    new THREE.CylinderGeometry(glowRadius, glowRadius, 1, 8),
-                    new THREE.MeshStandardMaterial({
-                        color: color, emissive: color, emissiveIntensity: 1.0,
-                        transparent: true, opacity: opacity * 0.4,
-                        blending: THREE.AdditiveBlending, depthWrite: false
-                    })
-                );
-                this.group.add(this.glow);
-
-                this.particles = [];
-                const pCount = Math.floor(10 + s * 20);
-                for (let i = 0; i < pCount; i++) {
-                    this.particles.push({ t: Math.random(), speed: 0.005 + Math.random() * 0.01 });
-                }
+                this.group.add(this.line);
             }
 
             update(time, start, end) {
@@ -1402,8 +1366,6 @@
                 this.group.position.copy(start).add(direction.clone().multiplyScalar(0.5));
                 this.group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
                 this.group.scale.set(1, length, 1);
-                const p = 1.0 + Math.sin(time * 3.0) * 0.1;
-                this.glow.scale.set(p, 1, p);
             }
         }
 
@@ -1430,36 +1392,18 @@
                     bCount++;
                 }
             });
-            const positions = beamParticlesGeo.attributes.position.array;
-            let pIdx = 0;
-            const dist = posA.distanceTo(posB) / SCALE;
-            const pLim = Math.floor(BEAM_PARTICLE_COUNT * Math.max(0.2, 1.0 - (dist / 2.5)));
+            // beamParticles no longer needed
             activeBeams.forEach(ab => {
                 const b = ab.beam;
                 const s = ab.start;
                 const e = ab.end;
-                b.particles.forEach(p => {
-                    if (pIdx < pLim) {
-                        p.t += p.speed;
-                        if (p.t > 1.0) p.t = 0;
-                        const pos = new THREE.Vector3().lerpVectors(s, e, p.t);
-                        const angle = time * 4 + p.t * 8;
-                        pos.x += Math.sin(angle) * 0.04;
-                        pos.z += Math.cos(angle) * 0.04;
-                        positions[pIdx * 3] = pos.x;
-                        positions[pIdx * 3 + 1] = pos.y;
-                        positions[pIdx * 3 + 2] = pos.z;
-                        pIdx++;
-                    }
-                });
+                // Static lines, no particle animation
             });
-            for (let i = pIdx; i < BEAM_PARTICLE_COUNT; i++) positions[i * 3] = 5000;
-            beamParticlesGeo.attributes.position.needsUpdate = true;
-            beamParticles.visible = activeBeams.length > 0;
         }
 
         let complementData = [];
 
+        let totalMirrorFactor = 0;
         function calculateComplements() {
             const uA = state.users.A;
             const uB = state.users.B;
@@ -1467,42 +1411,58 @@
             const typeB = getMBTITypeString(uB);
             const stackA = getFunctionStack(typeA);
             const stackB = getFunctionStack(typeB);
+            const lvA = getFunctionLevels(uA, stackA);
+            const lvB = getFunctionLevels(uB, stackB);
+            
             complementData = [];
+            totalMirrorFactor = 0;
             if (!stackA || !stackB) return;
-            const strength = [1.0, 0.8, 0.6, 0.4];
-            const weights = [1.3, 1.1, 0.9, 0.7];
-            const energy = ((100 - uA.EI) + (100 - uB.EI)) / 200;
+
+            // 1. Rescue Score (Standard Complement)
+            let rescueScore = 0;
+            
+            // Dual Relationship (P1(1) ↔ P2(4))
+            if (stackA[0] === stackB[3]) rescueScore += 40;
+            if (stackB[0] === stackA[3]) rescueScore += 40;
+
+            // Semi-Dual / Activity (P1(2) ↔ P2(4) or P1(1) ↔ P2(3))
+            if (stackA[1] === stackB[3] || stackA[0] === stackB[2]) rescueScore += 25;
+            if (stackB[1] === stackA[3] || stackB[0] === stackA[2]) rescueScore += 25;
+
+            state.rescueScoreRaw = rescueScore; // Store for normalization
+
+            // 2. Mirror Factor Calculation
+            let factors = [];
+            const isMirror = (f1, f2) => f1.substring(0, 1) === f2.substring(0, 1) && f1.substring(1, 2) !== f2.substring(1, 2);
+
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 4; j++) {
-                    if (stackA[i] === stackB[j]) {
-                        if (i === j) {
-                            // Same position: Resonance (共鳴)
-                            const resScore = strength[i] * 1.5;
+                    // Check Mirror Relation
+                    if (isMirror(stackA[i], stackB[j])) {
+                        let f = 0;
+                        if (i === j) f += 0.04; // Same position
+                        if (i < 2 && j < 2) f += 0.04; // Both top stack
+                        if (Math.abs(lvA[i] - lvB[j]) < 20) f += 0.02; // Close strength
+                        
+                        if (f > 0) {
+                            factors.push(f);
                             complementData.push({
-                                type: 'RESONANCE', from: 'BOTH', func: stackA[i],
-                                s: resScore, energy, idxA: i, idxB: j
+                                type: 'MIRROR', from: 'BOTH', funcA: stackA[i], funcB: stackB[j],
+                                s: f * 10, idxA: i, idxB: j
                             });
-                        } else {
-                            const sAB = (1.0 - strength[j]) * strength[i] * weights[i];
-                            const sBA = (1.0 - strength[i]) * strength[j] * weights[j];
-                            const totalS = sAB + sBA;
-                            if (totalS > 0.01) {
-                                complementData.push({
-                                    type: 'RESCUE', from: sAB > sBA ? 'A' : 'B', func: stackA[i],
-                                    s: totalS, energy, idxA: i, idxB: j
-                                });
-                            }
                         }
+                    }
+                    // Check same functions for "Rescue" visualization
+                    if (stackA[i] === stackB[j]) {
+                        complementData.push({
+                            type: 'RESCUE', from: i < j ? 'A' : 'B', func: stackA[i],
+                            s: 0.5, idxA: i, idxB: j
+                        });
                     }
                 }
             }
-            const isMirror = (f1, f2) => f1.substring(0, 1) === f2.substring(0, 1) && f1.substring(1, 2) !== f2.substring(1, 2);
-            for (let i = 0; i < 4; i++) {
-                if (isMirror(stackA[i], stackB[i])) {
-                    const s = strength[i] * 0.8 * weights[i];
-                    complementData.push({ type: 'MIRROR', from: 'BOTH', funcA: stackA[i], funcB: stackB[i], s: s, energy, idxA: i, idxB: i });
-                }
-            }
+            
+            totalMirrorFactor = Math.min(0.12, factors.reduce((a, b) => a + b, 0));
             complementData.sort((a, b) => b.s - a.s);
         }
 
@@ -1624,6 +1584,9 @@
             // Update tab texts
             const typeStrA = getMBTITypeString(uA);
             const typeStrB = getMBTITypeString(uB);
+            const stackA = getFunctionStack(typeStrA);
+            const stackB = getFunctionStack(typeStrB);
+
             document.getElementById('tab-A').querySelector('.mbti-type').textContent = `(${typeStrA})`;
             document.getElementById('tab-B').querySelector('.mbti-type').textContent = `(${typeStrB})`;
 
@@ -1722,23 +1685,24 @@
             sphereB.visible = !p2Untouched;
             line.visible = !p2Untouched;
 
-            calculateComplements(); // Always recalculate before UI sync so scores match currently set sliders
-            const stackA = getFunctionStack(typeStrA);
-            const stackB = getFunctionStack(typeStrB);
-            const totalS = complementData.reduce((acc, c) => acc + c.s, 0) * 15;
-            let compScore = totalS;
-            if (stackA && stackB) {
-                const getPerceptionAxis = (s) => (s.includes('Ni') || s.includes('Se')) ? 'NiSe' : 'NeSi';
-                const getJudgmentAxis = (s) => (s.includes('Ti') || s.includes('Fe')) ? 'TiFe' : 'TeFi';
-                if (getPerceptionAxis(stackA) !== getPerceptionAxis(stackB)) compScore += 10;
-                if (getJudgmentAxis(stackA) !== getJudgmentAxis(stackB)) compScore += 10;
-            }
-            if (compScore > 0 && compScore < 1) compScore = 1;
-            compScore = Math.min(100, compScore);
-            document.getElementById('comp-score-display').textContent = Math.round(compScore);
+            calculateComplements(); 
+            
+            // Final Complement Score Calculation
+            // Normalize rescue score (max possible approx 80-100)
+            let normalizedRescue = Math.min(100, state.rescueScoreRaw);
+            let compScore = normalizedRescue * (1 + totalMirrorFactor);
+            compScore = Math.min(100, Math.round(compScore));
+            
+            document.getElementById('comp-score-display').textContent = compScore;
+            
+            // UI Toggle for Mirror Icon
+            const compBox = document.getElementById('comp-score-box');
+            if (totalMirrorFactor > 0) compBox.classList.add('mirror-active');
+            else compBox.classList.remove('mirror-active');
+
             let compRank = 'D';
             let compRankColor = '#e74c3c';
-            if (compScore >= 80) { compRank = 'S+'; compRankColor = '#FFD700'; }
+            if (compScore >= 80) { compRank = 'S'; compRankColor = '#FFD700'; }
             else if (compScore >= 60) { compRank = 'A'; compRankColor = '#2ecc71'; }
             else if (compScore >= 40) { compRank = 'B'; compRankColor = '#3498db'; }
             else if (compScore >= 20) { compRank = 'C'; compRankColor = '#e67e22'; }
@@ -1765,33 +1729,58 @@
                 }
             }
 
+            const funcColors = {
+                'N': '#E4AE3A', 'S': '#33A474', 'T': '#4298B4', 'F': '#E46562'
+            };
+
             const updateNodes = (stack, pPrefix, cData, userData) => {
                 const levels = getFunctionLevels(userData, stack);
                 for (let i = 0; i < 4; i++) {
                     const node = document.getElementById(`${pPrefix}-f${i + 1}-side`);
-                    const nodeOld = document.getElementById(`${pPrefix}-f${i + 1}`);
                     const lvEl = document.getElementById(`${pPrefix}-f${i + 1}-lv`);
-                    [node, nodeOld].forEach(n => {
-                        if (!n) return;
-                        if (stack) {
-                            n.textContent = stack[i];
-                            n.className = 'function-node dimmed';
-                            const phase = state.timeline.phase;
+                    if (!node) continue;
+                    
+                    if (stack) {
+                        const func = stack[i];
+                        const type = func.charAt(0);
+                        const color = funcColors[type] || '#fff';
+                        
+                        node.innerHTML = `<span>${func}</span>`;
+                        node.className = 'function-node';
+                        node.style.setProperty('--fill', `${levels[i]}%`);
+                        node.style.setProperty('--fill-color', color + '66'); // 40% opacity hex
+                        node.style.borderColor = color + '88';
+
+                        const phase = state.timeline.phase;
+                        const isAnalyzing = state.mode === 'PLAYING';
+
+                        cData.forEach((c, idx) => {
+                            let active = (phase === 'CORE' && idx === 0) || (phase === 'SUB' && idx < 3) || phase === 'OVERVIEW';
+                            if (active && ((pPrefix === 'p1' && c.idxA === i) || (pPrefix === 'p2' && c.idxB === i))) {
+                                if (c.type === 'MIRROR') node.classList.add('glow-mirror');
+                                else if (idx === 0) node.classList.add('glow-high');
+                                else node.classList.add('glow-mid');
+                            }
+                        });
+                        
+                        if (isAnalyzing && phase !== 'IDLE' && phase !== 'OVERVIEW') {
+                            // Check if this node is involved in current phase's complements
+                            let involved = false;
                             cData.forEach((c, idx) => {
-                                let active = (phase === 'CORE' && idx === 0) || (phase === 'SUB' && idx < 3) || phase === 'OVERVIEW';
-                                if (active && ((pPrefix === 'p1' && c.idxA === i) || (pPrefix === 'p2' && c.idxB === i))) {
-                                    n.classList.remove('dimmed');
-                                    if (c.type === 'MIRROR') n.classList.add('glow-mirror');
-                                    else if (idx === 0) n.classList.add('glow-high');
-                                    else n.classList.add('glow-mid');
-                                }
+                                let active = (phase === 'CORE' && idx === 0) || (phase === 'SUB' && idx < 3);
+                                if (active && ((pPrefix === 'p1' && c.idxA === i) || (pPrefix === 'p2' && c.idxB === i))) involved = true;
                             });
-                            if (phase === 'IDLE' || phase === 'INTRO' || phase === 'DIFF' || state.mode === 'EDITING') n.classList.remove('dimmed');
+                            if (!involved && phase !== 'INTRO' && phase !== 'DIFF') node.style.opacity = '0.3';
+                            else node.style.opacity = '1';
                         } else {
-                            n.textContent = '-';
-                            n.className = 'function-node';
+                            node.style.opacity = '1';
                         }
-                    });
+                    } else {
+                        node.textContent = '-';
+                        node.className = 'function-node';
+                        node.style.setProperty('--fill', '0%');
+                        node.style.opacity = '1';
+                    }
                     if (lvEl) {
                         lvEl.textContent = stack ? `LV:${levels[i]}` : 'LV:0';
                     }
