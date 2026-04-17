@@ -45,9 +45,28 @@ export function updateNarration(state, totalComplements) {
         const stack = state.stacks[target];
         const levels = state.levels[target];
         
+        // Safety check for missing stack
+        if (!stack || !levels || stack.length < 4 || levels.length < 4) {
+            return null;
+        }
+
         // Cycle through functions based on time
         const cycleInterval = 4; // 4 seconds per function
-        const funcIndex = Math.floor(state.timeline.elapsed / cycleInterval) % 4;
+        const totalDuration = cycleInterval * 4;
+        const elapsed = state.timeline.elapsed;
+
+        // Stop after one full cycle (4 functions)
+        if (elapsed >= totalDuration) {
+            if (state.timeline.phase !== 'FINISHED') {
+                state.timeline.phase = 'FINISHED';
+                state.highlightUser = null;
+                state.highlightIndex = -1;
+                return { phase: 'FINISHED', text: '' };
+            }
+            return null;
+        }
+
+        const funcIndex = Math.floor(elapsed / cycleInterval);
         const phaseToken = `${state.viewMode}-${funcIndex}`;
 
         if (state.timeline.phase !== phaseToken) {

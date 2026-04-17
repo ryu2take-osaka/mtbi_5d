@@ -108,6 +108,8 @@ function setupEventListeners() {
 
     // --- Description Mode Button ---
     document.getElementById('desc-mode-btn').addEventListener('click', () => {
+        // Prevent freezing if stack is missing (押下時チェック)
+        if (!state.stacks[state.activeUser]) return;
         setViewMode(state.activeUser === 'A' ? 'self' : 'other');
     });
 
@@ -248,6 +250,10 @@ function animate() {
         const narr = updateNarration(state, state.complementData.data);
         if (narr) {
             const el = document.getElementById('narration-text');
+            if (narr.phase === 'FINISHED') {
+                const btn = document.getElementById('desc-mode-btn');
+                if (btn) btn.style.borderColor = 'transparent';
+            }
             el.classList.remove('visible');
             setTimeout(() => { el.innerHTML = narr.text; el.classList.add('visible'); }, 50);
         }
