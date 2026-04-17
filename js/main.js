@@ -177,24 +177,40 @@ function refreshAllData() {
 
 function updateScoreUI() {
     // Distance
-    const dist = three.scene.children.find(c => c.type === 'Mesh' && c.geometry.type === 'SphereGeometry').position.distanceTo(three.scene.children.find(c => c.type === 'Mesh' && c.geometry.type === 'SphereGeometry' && c !== three.scene.children.find(c => c.type === 'Mesh' && c.geometry.type === 'SphereGeometry')).position) / UI_CONFIG.SCALE;
-    let score = Math.max(0, Math.min(100, (1.0 - (dist/3.0)) * 100));
-    document.getElementById('score-display').textContent = Math.round(score);
-    
+    const spheres = three.scene.children.filter(c => c.geometry && c.geometry.type === 'SphereGeometry');
+    let score = 0;
+    if (spheres.length >= 2) {
+        const dist = spheres[0].position.distanceTo(spheres[1].position) / UI_CONFIG.SCALE;
+        score = Math.max(0, Math.min(100, (1.0 - (dist / 3.0)) * 100));
+    }
+    const scoreEl = document.getElementById('score-display');
+    if (scoreEl) scoreEl.textContent = Math.round(score);
+
     // Complement
     let compScore = Math.min(100, Math.round(Math.min(100, state.complementData.rescueScoreRaw) * (1 + state.complementData.mirrorFactor)));
-    document.getElementById('comp-score-display').textContent = compScore;
-    
+    const compScoreEl = document.getElementById('comp-score-display');
+    if (compScoreEl) compScoreEl.textContent = compScore;
+
     const compBox = document.getElementById('comp-score-box');
-    if (state.complementData.mirrorFactor > 0) compBox.classList.add('mirror-active');
-    else compBox.classList.remove('mirror-active');
-    
+    if (compBox) {
+        if (state.complementData.mirrorFactor > 0) compBox.classList.add('mirror-active');
+        else compBox.classList.remove('mirror-active');
+    }
+
     // Ranks
     updateRank('rank-display', score);
     updateRank('comp-rank-display', compScore);
-    
-    document.getElementById('tab-A').querySelector('.mbti-type').textContent = `(${state.typeA})`;
-    document.getElementById('tab-B').querySelector('.mbti-type').textContent = `(${state.typeB})`;
+
+    const tabA = document.getElementById('tab-A');
+    const tabB = document.getElementById('tab-B');
+    if (tabA) {
+        const span = tabA.querySelector('.mbti-type');
+        if (span) span.textContent = `(${state.typeA})`;
+    }
+    if (tabB) {
+        const span = tabB.querySelector('.mbti-type');
+        if (span) span.textContent = `(${state.typeB})`;
+    }
 }
 
 function updateRank(id, score) {
