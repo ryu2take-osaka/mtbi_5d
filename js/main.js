@@ -40,7 +40,8 @@ function initApp() {
     if (params.has('d')) {
         decodeState(params.get('d'));
         if (!isAllFifty(state.users.A) && !isAllFifty(state.users.B)) {
-            state.mode = 'EDITING';
+            state.activeUser = 'A'; // Maintain inner state but we will show SCORE
+            state.mode = 'EDITING'; 
             state.lastInteraction = -1000;
         }
     }
@@ -48,6 +49,12 @@ function initApp() {
     setupEventListeners();
     initTicks();
     refreshMainUI();
+    
+    // Default to SCORE if both have data
+    if (!isAllFifty(state.users.A) && !isAllFifty(state.users.B)) {
+        document.getElementById('tab-SCORE').click();
+    }
+    
     animate();
 }
 
@@ -68,6 +75,16 @@ function setupEventListeners() {
     document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => {
             const target = tab.getAttribute('data-target');
+            
+            // If clicking SCORE and we have data, trigger analysis if in EDITING
+            if (target === 'SCORE' && !isAllFifty(state.users.A) && !isAllFifty(state.users.B)) {
+                if (state.mode === 'EDITING' || state.mode === 'IDLE') {
+                    startAnalysis();
+                } else {
+                    setViewMode('compatibility');
+                }
+            }
+
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             
@@ -113,8 +130,19 @@ function setupEventListeners() {
         setViewMode(state.activeUser === 'A' ? 'self' : 'other');
     });
 
-    // Compatibility reset button
-    document.getElementById('tab-SCORE').addEventListener('click', () => setViewMode('compatibility'));
+    // We'll use the tab click handler for SCORE analysis
+}
+
+function startAnalysis() {
+    state.mode = 'ANALYZING';
+    document.getElementById('analysis-overlay').style.display = 'flex';
+    document.getElementById('narration-panel').style.display = 'none';
+    
+    setTimeout(() => {
+        state.mode = 'PLAYING';
+        setViewMode('compatibility');
+        document.getElementById('analysis-overlay').style.display = 'none';
+    }, UI_CONFIG.ANALYSIS_TIME);
 }
 
 function setViewMode(mode) {
@@ -213,6 +241,16 @@ function updateScoreUI() {
         const span = tabB.querySelector('.mbti-type');
         if (span) span.textContent = `(${state.typeB})`;
     }
+
+    // SCORE tab ready state
+    const tabScore = document.getElementById('tab-SCORE');
+    if (tabScore) {
+        if (!isAllFifty(state.users.A) && !isAllFifty(state.users.B)) {
+            tabScore.classList.add('ready');
+        } else {
+            tabScore.classList.remove('ready');
+        }
+    }
 }
 
 function updateRank(id, score) {
@@ -230,19 +268,9 @@ function animate() {
     const delta = clock.getDelta();
     const now = performance.now();
 
-    // State Transitions
+    // State Transitions removed: analysis is now manual via SCORE tab
     if (state.mode === 'EDITING' && now - state.lastInteraction > UI_CONFIG.INTERACTION_TIMEOUT) {
-        if (!isAllFifty(state.users.A) && !isAllFifty(state.users.B)) {
-            state.mode = 'ANALYZING';
-            document.getElementById('analysis-overlay').style.display = 'flex';
-            setTimeout(() => {
-                state.mode = 'PLAYING';
-                state.viewMode = 'compatibility';
-                state.timeline.elapsed = 0; state.timeline.phase = 'IDLE';
-                document.getElementById('analysis-overlay').style.display = 'none';
-                document.getElementById('narration-panel').style.display = 'block';
-            }, UI_CONFIG.ANALYSIS_TIME);
-        } else { state.mode = 'IDLE'; }
+        state.mode = 'IDLE'; 
     }
 
     if (state.mode === 'PLAYING') {
