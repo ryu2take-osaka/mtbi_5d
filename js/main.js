@@ -189,15 +189,12 @@ function updateScoreUI() {
     if (state.complementData.mirrorFactor > 0) compBox.classList.add('mirror-active');
     else compBox.classList.remove('mirror-active');
     
-    // Ranks and Summaries
+    // Ranks
     updateRank('rank-display', score);
     updateRank('comp-rank-display', compScore);
     
     document.getElementById('tab-A').querySelector('.mbti-type').textContent = `(${state.typeA})`;
     document.getElementById('tab-B').querySelector('.mbti-type').textContent = `(${state.typeB})`;
-    
-    updateSummary('summary-A', state.typeA);
-    updateSummary('summary-B', state.typeB);
 }
 
 function updateRank(id, score) {
@@ -209,13 +206,6 @@ function updateRank(id, score) {
     else if (score >= 20) { rank = 'C'; col = '#e67e22'; }
     el.textContent = rank; el.style.color = col;
 }
-
-function updateSummary(id, type) {
-    const el = document.getElementById(id);
-    el.querySelector('.score-type-name').textContent = type;
-    el.querySelector('.score-nickname').textContent = `タイプ：${MBTI_NICKNAMES[type.split('-')[0]] || '不明'}`;
-}
-
 const clock = new THREE.Clock();
 function animate() {
     requestAnimationFrame(animate);
