@@ -105,7 +105,6 @@ function setupEventListeners() {
     // Share & Actions
     document.getElementById('share-x-btn').addEventListener('click', shareToX);
     document.getElementById('copy-url-btn').addEventListener('click', copyURL);
-    document.getElementById('screenshot-btn').addEventListener('click', takeScreenshot);
 
     // --- Description Mode Button ---
     document.getElementById('desc-mode-btn').addEventListener('click', () => {
@@ -291,16 +290,4 @@ function copyURL() {
         const toast = document.getElementById('copy-toast');
         toast.style.opacity = '1'; setTimeout(() => toast.style.opacity = '0', 2000);
     });
-}
-function takeScreenshot() {
-    const btn = document.getElementById('screenshot-btn');
-    const original = btn.innerHTML;
-    btn.textContent = '保存中...';
-    html2canvas(document.body, { backgroundColor: '#050510', scale: window.devicePixelRatio || 1, useCORS: true }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `mbti_5d_${state.typeA}_${state.typeB}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        btn.innerHTML = original;
-    }).catch(() => { btn.innerHTML = original; alert('保存に失敗しました'); });
 }
