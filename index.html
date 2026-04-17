@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -14,6 +15,7 @@
         }
     </script>
 </head>
+
 <body>
     <div id="visualizer-main">
         <div id="header">
@@ -36,18 +38,42 @@
         <!-- Side Stacks (Floating) -->
         <div id="side-stack-A" class="side-stack">
             <div class="side-stack-label">P1 STACK</div>
-            <div class="function-slot"><div id="p1-f1-side" class="function-node"></div><div id="p1-f1-lv" class="function-lv"></div></div>
-            <div class="function-slot"><div id="p1-f2-side" class="function-node"></div><div id="p1-f2-lv" class="function-lv"></div></div>
-            <div class="function-slot"><div id="p1-f3-side" class="function-node"></div><div id="p1-f3-lv" class="function-lv"></div></div>
-            <div class="function-slot"><div id="p1-f4-side" class="function-node"></div><div id="p1-f4-lv" class="function-lv"></div></div>
+            <div class="function-slot">
+                <div id="p1-f1-side" class="function-node"></div>
+                <div id="p1-f1-lv" class="function-lv"></div>
+            </div>
+            <div class="function-slot">
+                <div id="p1-f2-side" class="function-node"></div>
+                <div id="p1-f2-lv" class="function-lv"></div>
+            </div>
+            <div class="function-slot">
+                <div id="p1-f3-side" class="function-node"></div>
+                <div id="p1-f3-lv" class="function-lv"></div>
+            </div>
+            <div class="function-slot">
+                <div id="p1-f4-side" class="function-node"></div>
+                <div id="p1-f4-lv" class="function-lv"></div>
+            </div>
         </div>
 
         <div id="side-stack-B" class="side-stack">
             <div class="side-stack-label">P2 STACK</div>
-            <div class="function-slot"><div id="p2-f1-side" class="function-node"></div><div id="p2-f1-lv" class="function-lv"></div></div>
-            <div class="function-slot"><div id="p2-f2-side" class="function-node"></div><div id="p2-f2-lv" class="function-lv"></div></div>
-            <div class="function-slot"><div id="p2-f3-side" class="function-node"></div><div id="p2-f3-lv" class="function-lv"></div></div>
-            <div class="function-slot"><div id="p2-f4-side" class="function-node"></div><div id="p2-f4-lv" class="function-lv"></div></div>
+            <div class="function-slot">
+                <div id="p2-f1-side" class="function-node"></div>
+                <div id="p2-f1-lv" class="function-lv"></div>
+            </div>
+            <div class="function-slot">
+                <div id="p2-f2-side" class="function-node"></div>
+                <div id="p2-f2-lv" class="function-lv"></div>
+            </div>
+            <div class="function-slot">
+                <div id="p2-f3-side" class="function-node"></div>
+                <div id="p2-f3-lv" class="function-lv"></div>
+            </div>
+            <div class="function-slot">
+                <div id="p2-f4-side" class="function-node"></div>
+                <div id="p2-f4-lv" class="function-lv"></div>
+            </div>
         </div>
     </div>
 
@@ -113,7 +139,8 @@
                         </div>
                         <!-- AT -->
                         <div class="slider-row">
-                            <div class="slider-label"><span id="lbl-AT-L">自己主張型</span><span id="lbl-AT-R">激動型</span></div>
+                            <div class="slider-label"><span id="lbl-AT-L">自己主張型</span><span id="lbl-AT-R">激動型</span>
+                            </div>
                             <div class="slider-control">
                                 <button class="adjust-btn" data-key="AT" data-dir="-1">-</button>
                                 <div class="slider-wrapper">
@@ -134,20 +161,24 @@
                 <div id="panel-SCORE" class="tab-panel">
                     <div class="score-row">
                         <div class="score-box">
-                            <div class="info-title">Distance Score</div>
+                            <div class="info-title">類似度</div>
                             <div class="score-value" id="score-display">0</div>
                             <div class="rank-badge" id="rank-display">D</div>
                         </div>
                         <div class="score-box" id="comp-score-box">
-                            <div class="info-title">Complement Score</div>
-                            <div class="score-value"><span id="comp-score-display">0</span><span class="mirror-icon">🔁</span></div>
+                            <div class="info-title">補完度</div>
+                            <div class="score-value"><span id="comp-score-display">0</span><span
+                                    class="mirror-icon">🔁</span></div>
                             <div class="rank-badge" id="comp-rank-display">D</div>
                         </div>
                     </div>
 
                     <div class="actions-grid">
                         <button class="share-btn" id="share-x-btn">
-                            <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            <svg viewBox="0 0 24 24">
+                                <path
+                                    d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                            </svg>
                             結果をシェア
                         </button>
                         <button class="share-btn" id="copy-url-btn">リンクをコピー</button>
@@ -161,4 +192,5 @@
     <!-- Scripts -->
     <script type="module" src="js/main.js"></script>
 </body>
+
 </html>
