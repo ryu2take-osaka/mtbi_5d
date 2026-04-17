@@ -55,6 +55,12 @@ function initApp() {
         document.getElementById('tab-SCORE').click();
     }
     
+    // Hide startup overlay after animations
+    setTimeout(() => {
+        const startup = document.getElementById('startup-overlay');
+        if (startup) startup.classList.add('hidden');
+    }, 2500);
+
     animate();
 }
 

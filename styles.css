@@ -46,26 +46,78 @@ body {
     max-height: 50vh;
 }
 
-#header {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 10;
+/* Startup Overlay */
+#startup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, #0f172a 0%, #050510 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1), visibility 1s;
+}
+
+#startup-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
     pointer-events: none;
 }
 
-#header h1 {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+.startup-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-#header p {
-    margin: 5px 0 0;
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
+.startup-content h1 {
+    font-size: clamp(32px, 8vw, 72px);
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: 0.2em;
+    background: linear-gradient(to bottom, #fff 0%, #aaa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+    animation: startup-reveal 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.startup-line {
+    width: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #fff, transparent);
+    margin: 20px 0;
+    animation: line-grow 1s 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.startup-content p {
+    font-size: clamp(12px, 2vw, 18px);
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fade-up 1s 0.8s ease-out forwards;
+}
+
+@keyframes startup-reveal {
+    0% { transform: scale(0.9); filter: blur(20px); opacity: 0; }
+    100% { transform: scale(1); filter: blur(0); opacity: 1; }
+}
+
+@keyframes line-grow {
+    0% { width: 0; opacity: 0; }
+    100% { width: 300px; opacity: 1; }
+}
+
+@keyframes fade-up {
+    0% { transform: translateY(10px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
 }
 
 .main-ui {
