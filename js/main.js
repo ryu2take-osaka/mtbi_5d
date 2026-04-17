@@ -77,6 +77,7 @@ function setupEventListeners() {
             } else {
                 document.getElementById('panel-A').classList.add('active');
                 state.activeUser = target;
+                document.getElementById('desc-mode-btn').textContent = target === 'A' ? 'あなたの説明' : 'あいての説明';
                 refreshMainUI();
             }
         });
@@ -106,29 +107,12 @@ function setupEventListeners() {
     document.getElementById('copy-url-btn').addEventListener('click', copyURL);
     document.getElementById('screenshot-btn').addEventListener('click', takeScreenshot);
 
-    // --- Description Mode Buttons ---
-    const btnSelf = document.createElement('button');
-    btnSelf.className = 'share-btn desc-btn';
-    btnSelf.id = 'desc-self-btn';
-    btnSelf.innerHTML = 'あなたの説明';
-    btnSelf.style.background = 'rgba(255,255,255,0.1)';
-    btnSelf.style.color = '#fff';
+    // --- Description Mode Button ---
+    document.getElementById('desc-mode-btn').addEventListener('click', () => {
+        setViewMode(state.activeUser === 'A' ? 'self' : 'other');
+    });
 
-    const btnOther = document.createElement('button');
-    btnOther.className = 'share-btn desc-btn';
-    btnOther.id = 'desc-other-btn';
-    btnOther.innerHTML = 'あいての説明';
-    btnOther.style.background = 'rgba(255,255,255,0.1)';
-    btnOther.style.color = '#fff';
-
-    const grid = document.querySelector('.actions-grid');
-    grid.appendChild(btnSelf);
-    grid.appendChild(btnOther);
-
-    btnSelf.addEventListener('click', () => setViewMode('self'));
-    btnOther.addEventListener('click', () => setViewMode('other'));
-
-    // Compatibility reset button (maybe on tab click or explicit button)
+    // Compatibility reset button
     document.getElementById('tab-SCORE').addEventListener('click', () => setViewMode('compatibility'));
 }
 
@@ -138,11 +122,11 @@ function setViewMode(mode) {
     state.timeline.phase = 'IDLE';
     state.highlightIndex = -1;
     state.highlightUser = null;
+    state.mode = 'PLAYING';
     
     // UI feedback
-    document.querySelectorAll('.desc-btn').forEach(b => b.style.borderColor = 'transparent');
-    if (mode === 'self') document.getElementById('desc-self-btn').style.borderColor = '#fff';
-    if (mode === 'other') document.getElementById('desc-other-btn').style.borderColor = '#fff';
+    const btn = document.getElementById('desc-mode-btn');
+    if (btn) btn.style.borderColor = mode === 'compatibility' ? 'transparent' : '#fff';
     
     document.getElementById('narration-panel').style.display = 'block';
     refreshAllData();

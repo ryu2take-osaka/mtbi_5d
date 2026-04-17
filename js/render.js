@@ -199,7 +199,8 @@ function updateStackNodes(prefix, stack, user, state) {
             node.style.borderColor = color + '88';
             
             // Highlight Logic
-            if (state.highlightIndex === i && (state.highlightUser === prefix.toUpperCase() || state.highlightUser === 'BOTH')) {
+            const isTargetUser = (state.highlightUser === 'A' && prefix === 'p1') || (state.highlightUser === 'B' && prefix === 'p2') || state.highlightUser === 'BOTH';
+            if (state.highlightIndex === i && isTargetUser) {
                 node.classList.add('active');
             }
 

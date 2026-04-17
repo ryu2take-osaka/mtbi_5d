@@ -122,13 +122,14 @@ body {
 }
 
 .slider-label {
-    width: 130px;
+    flex: 0 0 130px;
     display: flex;
     justify-content: space-between;
     font-size: 11px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.8);
     letter-spacing: 0.5px;
+    white-space: nowrap;
 }
 
 .slider-control {
@@ -237,9 +238,9 @@ input[type=range]::-webkit-slider-thumb {
 .share-btn {
     margin-top: 10px;
     padding: 10px 20px;
-    background: #fff;
-    color: #000;
-    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 20px;
     font-weight: 800;
     cursor: pointer;
@@ -254,8 +255,13 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 .share-btn:hover {
-    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.2);
     transform: scale(1.02);
+}
+
+.share-btn.screenshot {
+    background: #fff;
+    color: #000;
 }
 
 .tab-panel {

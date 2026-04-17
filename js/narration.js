@@ -48,13 +48,17 @@ export function updateNarration(state, totalComplements) {
         // Cycle through functions based on time
         const cycleInterval = 4; // 4 seconds per function
         const funcIndex = Math.floor(state.timeline.elapsed / cycleInterval) % 4;
-        
-        state.highlightUser = target;
-        state.highlightIndex = funcIndex;
+        const phaseToken = `${state.viewMode}-${funcIndex}`;
 
-        const labels = ['主機能', '補助機能', '第3機能', '劣等機能'];
-        const text = `【${labels[funcIndex]}】<br>` + buildFunctionText(stack[funcIndex], levels[funcIndex], user.AT);
-        return { phase: 'DESC', text };
+        if (state.timeline.phase !== phaseToken) {
+            state.timeline.phase = phaseToken;
+            state.highlightUser = target;
+            state.highlightIndex = funcIndex;
+
+            const labels = ['主機能', '補助機能', '第3機能', '劣等機能'];
+            const text = `【${labels[funcIndex]}】<br>` + buildFunctionText(stack[funcIndex], levels[funcIndex], user.AT);
+            return { phase: phaseToken, text };
+        }
     }
     return null;
 }
