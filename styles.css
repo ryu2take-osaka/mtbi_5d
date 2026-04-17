@@ -386,9 +386,10 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 .mirror-icon {
-    font-size: 0.6em;
-    vertical-align: middle;
-    margin-left: 4px;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    margin-left: 6px;
+    opacity: 0.8;
     display: none;
 }
 
