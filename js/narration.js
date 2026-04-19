@@ -1,7 +1,7 @@
 /**
  * Narration and Timeline Control
  */
-import { FUNCTION_DESCRIPTIONS } from './data.js';
+import { FUNCTION_DESCRIPTIONS, MBTI_TITLES, MBTI_NICKNAMES } from './data.js';
 import { LV_BAND, UI_CONFIG } from './config.js';
 
 export function getLvBand(lv) {
@@ -44,18 +44,19 @@ export function updateNarration(state, totalComplements) {
         const user = state.users[target];
         const stack = state.stacks[target];
         const levels = state.levels[target];
+        const typeStr = state[target === 'A' ? 'typeA' : 'typeB'].split('-')[0];
         
         // Safety check for missing stack
         if (!stack || !levels || stack.length < 4 || levels.length < 4) {
             return null;
         }
 
-        // Cycle through functions based on time
-        const cycleInterval = 4; // 4 seconds per function
-        const totalDuration = cycleInterval * 4;
+        // Cycle through functions + final epithet
+        const cycleInterval = 4; // 4 seconds per block
+        const totalDuration = cycleInterval * 5; // 4 functions + 1 epithet
         const elapsed = state.timeline.elapsed;
 
-        // Stop after one full cycle (4 functions)
+        // Stop after one full cycle
         if (elapsed >= totalDuration) {
             if (state.timeline.phase !== 'FINISHED') {
                 state.timeline.phase = 'FINISHED';
@@ -71,12 +72,30 @@ export function updateNarration(state, totalComplements) {
 
         if (state.timeline.phase !== phaseToken) {
             state.timeline.phase = phaseToken;
-            state.highlightUser = target;
-            state.highlightIndex = funcIndex;
+            
+            if (funcIndex < 4) {
+                // Functional stages
+                state.highlightUser = target;
+                state.highlightIndex = funcIndex;
+                const labels = ['主機能', '補助機能', '第3機能', '劣等機能'];
+                const text = `【${labels[funcIndex]}】<br>` + buildFunctionText(stack[funcIndex], levels[funcIndex], user.AT);
+                return { phase: phaseToken, text };
+            } else {
+                // Final Epithet stage
+                state.highlightUser = null;
+                state.highlightIndex = -1;
+                
+                const nickname = MBTI_NICKNAMES[typeStr] || "探究者";
+                const isT = user.AT > 50;
+                const isInverted = levels[2] > levels[1];
+                
+                const variantKey = (isInverted ? 'I' : 'S') + (isT ? 'T' : 'A');
+                const epithet = (MBTI_TITLES[typeStr] || {})[variantKey] || "未知なる者";
 
-            const labels = ['主機能', '補助機能', '第3機能', '劣等機能'];
-            const text = `【${labels[funcIndex]}】<br>` + buildFunctionText(stack[funcIndex], levels[funcIndex], user.AT);
-            return { phase: phaseToken, text };
+                const text = `<span style="font-size: 0.8em; opacity: 0.8;">総合評価：${nickname}</span><br>
+<span style="font-size: 1.2em; color: #fff; text-shadow: 0 0 15px rgba(255,255,255,0.5);">「${epithet}」</span>`;
+                return { phase: phaseToken, text };
+            }
         }
     }
     return null;
