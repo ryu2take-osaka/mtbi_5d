@@ -51,10 +51,11 @@ export function updateNarration(state, totalComplements) {
             return null;
         }
 
-        // Cycle through functions + final epithet
         const cycleInterval = 4; // 4 seconds per block
-        const totalDuration = cycleInterval * 5; // 4 functions + 1 epithet
         const elapsed = state.timeline.elapsed;
+        const functionDuration = cycleInterval * 4; // 16s
+        const preTitleDuration = 2; // 2s
+        const totalDuration = functionDuration + preTitleDuration + 10; // Total 28s
 
         // Stop after one full cycle
         if (elapsed >= totalDuration) {
@@ -67,35 +68,39 @@ export function updateNarration(state, totalComplements) {
             return null;
         }
 
-        const funcIndex = Math.floor(elapsed / cycleInterval);
-        const phaseToken = `${state.viewMode}-${funcIndex}`;
+        let phaseToken = '';
+        let text = '';
+        let highlightIdx = -1;
+
+        if (elapsed < functionDuration) {
+            // Functional stages (0-16s)
+            const funcIndex = Math.floor(elapsed / cycleInterval);
+            phaseToken = `${state.viewMode}-${funcIndex}`;
+            highlightIdx = funcIndex;
+            const labels = ['主機能', '補助機能', '第3機能', '劣等機能'];
+            text = `【${labels[funcIndex]}】<br>` + buildFunctionText(stack[funcIndex], levels[funcIndex], user.AT);
+        } else if (elapsed < functionDuration + preTitleDuration) {
+            // Stage 1: "Type is..." (16-18s)
+            phaseToken = `${state.viewMode}-PRE_TITLE`;
+            text = `<span style="font-size: 1.1em; opacity: 0.9;">${target === 'A' ? 'あなた' : 'あいて'}のタイプ...</span>`;
+        } else {
+            // Stage 2: Full Title (18-28s)
+            phaseToken = `${state.viewMode}-TITLE_REVEAL`;
+            const nickname = MBTI_NICKNAMES[typeStr] || "探究者";
+            const isT = user.AT > 50;
+            const isInverted = levels[2] > levels[1];
+            const variantKey = (isInverted ? 'I' : 'S') + (isT ? 'T' : 'A');
+            const epithet = (MBTI_TITLES[typeStr] || {})[variantKey] || "未知なる者";
+
+            text = `<span style="font-size: 0.9em; opacity: 0.8;">${target === 'A' ? 'あなた' : 'あいて'}は<strong>${nickname}</strong></span><br>
+<span style="font-size: 1.3em; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.6); display: block; margin-top: 10px;">ーー「${epithet}」です。</span>`;
+        }
 
         if (state.timeline.phase !== phaseToken) {
             state.timeline.phase = phaseToken;
-            
-            if (funcIndex < 4) {
-                // Functional stages
-                state.highlightUser = target;
-                state.highlightIndex = funcIndex;
-                const labels = ['主機能', '補助機能', '第3機能', '劣等機能'];
-                const text = `【${labels[funcIndex]}】<br>` + buildFunctionText(stack[funcIndex], levels[funcIndex], user.AT);
-                return { phase: phaseToken, text };
-            } else {
-                // Final Epithet stage
-                state.highlightUser = null;
-                state.highlightIndex = -1;
-                
-                const nickname = MBTI_NICKNAMES[typeStr] || "探究者";
-                const isT = user.AT > 50;
-                const isInverted = levels[2] > levels[1];
-                
-                const variantKey = (isInverted ? 'I' : 'S') + (isT ? 'T' : 'A');
-                const epithet = (MBTI_TITLES[typeStr] || {})[variantKey] || "未知なる者";
-
-                const text = `<span style="font-size: 0.8em; opacity: 0.8;">総合評価：${nickname}</span><br>
-<span style="font-size: 1.2em; color: #fff; text-shadow: 0 0 15px rgba(255,255,255,0.5);">「${epithet}」</span>`;
-                return { phase: phaseToken, text };
-            }
+            state.highlightUser = (elapsed < functionDuration) ? target : null;
+            state.highlightIndex = highlightIdx;
+            return { phase: phaseToken, text };
         }
     }
     return null;

@@ -13,6 +13,7 @@ import { MBTI_FUNCTION_STACKS, MBTI_NICKNAMES } from './data.js';
 let scene, camera, renderer, composer, bloomPass, controls;
 let sphereA, sphereB, line, guidesA, guidesB;
 let beamsGroup;
+let gFloor, gLeft, gBack;
 
 const SCALE = UI_CONFIG.SCALE;
 const BOX_SIZE = SCALE * 2;
@@ -64,16 +65,16 @@ function initObjects() {
     const isMobile = window.innerWidth <= 768;
     const div = isMobile ? 10 : 20;
 
-    const gFloor = new THREE.GridHelper(BOX_SIZE, div, gridColorLine, gridColorBg);
+    gFloor = new THREE.GridHelper(BOX_SIZE, div, gridColorLine, gridColorBg);
     gFloor.position.y = -SCALE;
     scene.add(gFloor);
 
-    const gLeft = new THREE.GridHelper(BOX_SIZE, div, gridColorLine, gridColorBg);
+    gLeft = new THREE.GridHelper(BOX_SIZE, div, gridColorLine, gridColorBg);
     gLeft.rotation.z = Math.PI / 2;
     gLeft.position.x = -SCALE;
     scene.add(gLeft);
 
-    const gBack = new THREE.GridHelper(BOX_SIZE, div, gridColorLine, gridColorBg);
+    gBack = new THREE.GridHelper(BOX_SIZE, div, gridColorLine, gridColorBg);
     gBack.rotation.x = Math.PI / 2;
     gBack.position.z = -SCALE;
     scene.add(gBack);
@@ -170,6 +171,20 @@ export function updateVisuals(state) {
 
     // Bloom juiciness
     bloomPass.strength = 0.5 + (((100 - uA.EI) / 100 + (100 - uB.EI) / 100) / 2) * 1.5;
+
+    // Grid Tinting Effect
+    const phase = state.timeline.phase;
+    const isReveal = phase && phase.includes('TITLE_REVEAL');
+    const targetColor = new THREE.Color(0x555566);
+    if (isReveal) {
+        const targetUser = state.viewMode === 'self' ? uA : uB;
+        targetColor.copy(getGroupColor(targetUser));
+    }
+    
+    [gFloor, gLeft, gBack].forEach(g => {
+        if (!g) return;
+        g.material.color.lerp(targetColor, 0.1);
+    });
 }
 
 function updateGuidesVisibility(g, pos, visible) {
