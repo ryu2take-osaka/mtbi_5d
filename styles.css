@@ -505,6 +505,8 @@ input[type=range]::-webkit-slider-thumb {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     width: 100%;
+    max-width: 500px;
+    margin: 10px auto 0;
 }
 
 .copy-toast {
@@ -575,13 +577,11 @@ input[type=range]::-webkit-slider-thumb {
 #narration-text {
     font-size: 24px;
     font-weight: 800;
-    background: linear-gradient(to right, #fff, #aaa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+    color: #fff;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 0 0 40px rgba(0, 0, 0, 0.8);
     line-height: 1.4;
     opacity: 0;
-    transition: all 0.5s;
+    transition: opacity 0.5s, transform 0.5s;
     transform: translateY(20px);
 }
 

@@ -92,8 +92,8 @@ export function updateNarration(state, totalComplements) {
             const variantKey = (isInverted ? 'I' : 'S') + (isT ? 'T' : 'A');
             const epithet = (MBTI_TITLES[typeStr] || {})[variantKey] || "未知なる者";
 
-            text = `<span style="font-size: 0.9em; opacity: 0.8;">${target === 'A' ? 'あなた' : 'あいて'}は<strong>${nickname}</strong></span><br>
-<span style="font-size: 1.3em; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.6); display: block; margin-top: 10px;">ーー「${epithet}」です。</span>`;
+            text = `<div style="font-size: 0.9em; opacity: 0.8; margin-bottom: 8px;">${target === 'A' ? 'あなた' : 'あいて'}は<strong>${nickname}</strong>です</div>
+<div style="font-size: 1.3em; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.6);">ーー「${epithet}」</div>`;
         }
 
         if (state.timeline.phase !== phaseToken) {

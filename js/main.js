@@ -289,7 +289,13 @@ function animate() {
                 if (btn) btn.style.borderColor = 'transparent';
             }
             el.classList.remove('visible');
-            setTimeout(() => { el.innerHTML = narr.text; el.classList.add('visible'); }, 50);
+            // Use rAF to ensure browser processes the removal before adding back
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    el.innerHTML = narr.text;
+                    el.classList.add('visible');
+                });
+            });
         }
         
         if (state.viewMode === 'compatibility') {
@@ -326,17 +332,21 @@ function encodeState() {
     return btoa(String.fromCharCode.apply(null, arr));
 }
 function shareToX() {
-    const uA = state.users.A;
-    const typeStr = getMBTITypeString(uA).split('-')[0];
+    const isSelf = state.viewMode === 'self';
+    const target = isSelf ? 'A' : 'B';
+    const u = state.users[target];
+    const typeStr = state[target === 'A' ? 'typeA' : 'typeB'].split('-')[0];
     const nickname = MBTI_NICKNAMES[typeStr] || "探究者";
-    const levels = getFunctionLevels(uA, MBTI_FUNCTION_STACKS[typeStr]);
-    const isT = uA.AT > 50;
+    
+    // Get correct title data
+    const levels = state.levels[target];
+    const isT = u.AT > 50;
     const isInverted = levels[2] > levels[1];
     const variantKey = (isInverted ? 'I' : 'S') + (isT ? 'T' : 'A');
     const epithet = (MBTI_TITLES[typeStr] || {})[variantKey] || "未知なる者";
 
     const url = `${window.location.origin}${window.location.pathname}?d=${encodeURIComponent(encodeState())}`;
-    const text = `わたしのタイプは${nickname}「${epithet}」\n\n結果をチェック：\n${url}\n#MBTI_5D`;
+    const text = `${target === 'A' ? 'わたし' : 'あいて'}のタイプは${nickname}「${epithet}」\n\n結果をチェック：\n${url}\n#MBTI_5D`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
 }
 function copyURL() {

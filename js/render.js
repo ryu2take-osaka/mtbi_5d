@@ -154,9 +154,14 @@ export function updateVisuals(state) {
         const glow = (100 - u.EI) / 100;
         const col = getGroupColor(u);
         mesh.scale.setScalar(1.3 - (u.AT / 100) * 0.6);
+        
+        // Final Reveal Boost
+        const isReveal = state.timeline.phase && state.timeline.phase.includes('TITLE_REVEAL');
+        const boost = isReveal ? 5.0 : 1.0;
+
         mesh.material.color.copy(col).multiplyScalar(0.2);
         mesh.material.emissive.copy(col);
-        mesh.material.emissiveIntensity = 0.3 + glow * 2.0;
+        mesh.material.emissiveIntensity = (0.5 + glow * 2.5) * boost;
     };
     applyLooks(sphereA, uA);
     applyLooks(sphereB, uB);
@@ -170,7 +175,8 @@ export function updateVisuals(state) {
     updateStackNodes('p2', p2Exists ? stackB : null, uB, state);
 
     // Bloom juiciness
-    bloomPass.strength = 0.5 + (((100 - uA.EI) / 100 + (100 - uB.EI) / 100) / 2) * 1.5;
+    const revealFactor = isReveal ? 2.0 : 1.0;
+    bloomPass.strength = (0.6 + (((100 - uA.EI) / 100 + (100 - uB.EI) / 100) / 2) * 1.5) * revealFactor;
 
     // Grid Tinting Effect
     const phase = state.timeline.phase;
@@ -240,7 +246,7 @@ function updateStackNodes(prefix, stack, user, state) {
 
 function getGroupColor(u) {
     const isN = u.NS < 50; const isT = u.TF < 50; const isJ = u.JP < 50;
-    if (isN && isT) return new THREE.Color('#9b59b6');
+    if (isN && isT) return new THREE.Color('#bf5af2');
     if (isN && !isT) return new THREE.Color('#2ecc71');
     if (!isN && isJ) return new THREE.Color('#3498db');
     if (!isN && !isJ) return new THREE.Color('#f1c40f');
