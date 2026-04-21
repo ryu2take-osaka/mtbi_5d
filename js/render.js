@@ -174,13 +174,14 @@ export function updateVisuals(state) {
     updateStackNodes('p1', stackA, uA, state);
     updateStackNodes('p2', p2Exists ? stackB : null, uB, state);
 
+    const phase = state.timeline.phase;
+    const isReveal = phase && phase.includes('TITLE_REVEAL');
+
     // Bloom juiciness
     const revealFactor = isReveal ? 2.0 : 1.0;
     bloomPass.strength = (0.6 + (((100 - uA.EI) / 100 + (100 - uB.EI) / 100) / 2) * 1.5) * revealFactor;
 
     // Grid Tinting Effect
-    const phase = state.timeline.phase;
-    const isReveal = phase && phase.includes('TITLE_REVEAL');
     const targetColor = new THREE.Color(0x555566);
     if (isReveal) {
         const targetUser = state.viewMode === 'self' ? uA : uB;
