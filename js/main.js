@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { initThree, updateVisuals, drawBeams, clearBeams } from './render.js';
 import { calculateComplements, getMBTITypeString, getFunctionLevels } from './score.js';
-import { MBTI_FUNCTION_STACKS, MBTI_NICKNAMES } from './data.js';
+import { MBTI_FUNCTION_STACKS, MBTI_NICKNAMES, MBTI_TITLES } from './data.js';
 import { updateNarration } from './narration.js';
 import { UI_CONFIG } from './config.js';
 
@@ -346,7 +346,7 @@ function shareToX() {
     const epithet = (MBTI_TITLES[typeStr] || {})[variantKey] || "未知なる者";
 
     const url = `${window.location.origin}${window.location.pathname}?d=${encodeURIComponent(encodeState())}`;
-    const text = `${target === 'A' ? 'わたし' : 'あいて'}のタイプは${nickname}「${epithet}」\n\n結果をチェック：\n${url}\n#MBTI_5D`;
+    const text = `わたしのタイプは${nickname}「${epithet}」\n\n結果をチェック：\n${url}\n#MBTI_5D`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
 }
 function copyURL() {
