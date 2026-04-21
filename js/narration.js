@@ -77,8 +77,8 @@ export function updateNarration(state, totalComplements) {
         const elapsed = state.timeline.elapsed;
         const functionDuration = cycleInterval * 4; // 16s
         const summaryDuration = 4; // 4s for stack summary
-        const preTitleDuration = 2; // 2s
-        const totalDuration = functionDuration + summaryDuration + preTitleDuration + 10; // Total 32s
+        const preTitleDuration = 4; // 4s (increased from 2s)
+        const totalDuration = functionDuration + summaryDuration + preTitleDuration + 10; // Total 34s
 
         // Stop after one full cycle
         if (elapsed >= totalDuration) {
