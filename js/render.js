@@ -139,6 +139,9 @@ export function updateVisuals(state) {
     const stackA = MBTI_FUNCTION_STACKS[typeStrA.split('-')[0]];
     const stackB = MBTI_FUNCTION_STACKS[typeStrB.split('-')[0]];
 
+    const phase = state.timeline.phase;
+    const isReveal = phase && phase.includes('TITLE_REVEAL');
+
     // Positions
     const getPos = (u) => new THREE.Vector3(((u.NS - 50) / 50) * SCALE, ((u.TF - 50) / 50) * SCALE, ((u.JP - 50) / 50) * SCALE);
     sphereA.position.copy(getPos(uA));
@@ -173,9 +176,6 @@ export function updateVisuals(state) {
     // Side Stacks
     updateStackNodes('p1', stackA, uA, state);
     updateStackNodes('p2', p2Exists ? stackB : null, uB, state);
-
-    const phase = state.timeline.phase;
-    const isReveal = phase && phase.includes('TITLE_REVEAL');
 
     // Bloom juiciness
     const revealFactor = isReveal ? 2.0 : 1.0;
