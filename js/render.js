@@ -150,21 +150,21 @@ export function updateVisuals(state) {
     if (p2Exists) line.geometry.setFromPoints([sphereA.position, sphereB.position]);
 
     // Appearance
-    const applyLooks = (mesh, u) => {
+    const applyLooks = (mesh, u, isTarget) => {
         const glow = (100 - u.EI) / 100;
         const col = getGroupColor(u);
         mesh.scale.setScalar(1.3 - (u.AT / 100) * 0.6);
         
-        // Final Reveal Boost
-        const isReveal = state.timeline.phase && state.timeline.phase.includes('TITLE_REVEAL');
-        const boost = isReveal ? 5.0 : 1.0;
+        // Final Reveal Boost - only for the described user
+        const isReveal = phase && phase.includes('TITLE_REVEAL');
+        const boost = (isReveal && isTarget) ? 3.0 : 1.0;
 
         mesh.material.color.copy(col).multiplyScalar(0.2);
         mesh.material.emissive.copy(col);
         mesh.material.emissiveIntensity = (0.5 + glow * 2.5) * boost;
     };
-    applyLooks(sphereA, uA);
-    applyLooks(sphereB, uB);
+    applyLooks(sphereA, uA, state.viewMode === 'self');
+    applyLooks(sphereB, uB, state.viewMode === 'other');
 
     // Guides
     updateGuidesVisibility(guidesA, sphereA.position, true);
