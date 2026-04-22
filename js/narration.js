@@ -4,6 +4,14 @@
 import { FUNCTION_DESCRIPTIONS, MBTI_TITLES, MBTI_NICKNAMES } from './data.js';
 import { LV_BAND, UI_CONFIG } from './config.js';
 
+export function getStackStatus(lv) {
+    const [f1, f2, f3, f4] = lv;
+    if (f4 >= f2 * 0.75 && f4 >= 20) return { key: 'expanded', name: '拡張型' };
+    if (f3 > f2 + 5) return { key: 'inverted', name: '反転型' };
+    if (Math.abs(f2 - f3) <= 5) return { key: 'tilted', name: '傾斜型' };
+    return { key: 'balanced', name: '均衡型' };
+}
+
 export function getLvBand(lv) {
     if (lv >= LV_BAND.HIGH) return 'HIGH';
     if (lv >= LV_BAND.MID) return 'MID';
@@ -40,8 +48,7 @@ export function buildStackSummary(lv, stack, isIntrovert) {
     if (Math.abs(f2 - f3) <= 5) {
         return intro + `補助機能【${names[1]}】と第三機能【${names[2]}】が主導権を競い合っています。どちらの側面も捨てきれない、一面的でない個性が光る「傾斜型」の知性。その揺らぎこそが、あなたの魅力となっています。`;
     }
-    // 4. Balanced (均衡型)
-    return intro + `補助機能【${names[1]}】が内外のバランスを堅実に整えています。第三機能との連携もスムーズで、特定の偏りに陥りにくい、極めて安定感のある「均衡型」の精神構造です。`;
+    return intro + `【${getStackStatus(lv).name}】の精神構造です。`;
 }
 
 export function updateNarration(state, totalComplements) {
@@ -106,6 +113,7 @@ export function updateNarration(state, totalComplements) {
             // Stage: Stack Summary (16-20s)
             phaseToken = `${state.viewMode}-STACK_SUMMARY`;
             highlightIdx = -1;
+            const status = getStackStatus(levels);
             text = `【スタック特性】<br><span style="font-size: 0.9em; opacity: 0.9;">` + buildStackSummary(levels, stack, user.EI >= 50) + `</span>`;
         } else if (elapsed < functionDuration + summaryDuration + preTitleDuration) {
             // Stage 1: "Type is..." (20-22s)

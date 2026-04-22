@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { initThree, updateVisuals, drawBeams, clearBeams } from './render.js';
 import { calculateComplements, getMBTITypeString, getFunctionLevels } from './score.js';
 import { MBTI_FUNCTION_STACKS, MBTI_NICKNAMES, MBTI_TITLES } from './data.js';
-import { updateNarration } from './narration.js';
+import { updateNarration, getStackStatus } from './narration.js';
 import { UI_CONFIG } from './config.js';
 
 const state = {
@@ -50,15 +50,22 @@ function initApp() {
     initTicks();
     refreshMainUI();
     
-    // Default to SCORE if both have data
-    if (!isAllFifty(state.users.A) && !isAllFifty(state.users.B)) {
-        document.getElementById('tab-SCORE').click();
-    }
-    
-    // Hide startup overlay after animations
+    // Hide startup overlay after animations and start analysis if needed
     setTimeout(() => {
         const startup = document.getElementById('startup-overlay');
         if (startup) startup.classList.add('hidden');
+        
+        // After fade out, check if we should start analysis
+        setTimeout(() => {
+            if (!isAllFifty(state.users.A) && !isAllFifty(state.users.B)) {
+                const tabScore = document.getElementById('tab-SCORE');
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tabScore.classList.add('active');
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById('panel-SCORE').classList.add('active');
+                startAnalysis();
+            }
+        }, 1000); // Wait for fade-out transition
     }, 2500);
 
     animate();
@@ -268,6 +275,7 @@ function updateRank(id, score) {
     else if (score >= 20) { rank = 'C'; col = '#e67e22'; }
     el.textContent = rank; el.style.color = col;
 }
+
 const clock = new THREE.Clock();
 function animate() {
     requestAnimationFrame(animate);
@@ -332,21 +340,21 @@ function encodeState() {
     return btoa(String.fromCharCode.apply(null, arr));
 }
 function shareToX() {
-    const isSelf = state.viewMode === 'self';
-    const target = isSelf ? 'A' : 'B';
+    const target = 'A'; // Always share User A as "My type"
     const u = state.users[target];
-    const typeStr = state[target === 'A' ? 'typeA' : 'typeB'].split('-')[0];
+    const typeStr = state.typeA.split('-')[0];
     const nickname = MBTI_NICKNAMES[typeStr] || "探究者";
     
-    // Get correct title data
     const levels = state.levels[target];
     const isT = u.AT > 50;
     const isInverted = levels[2] > levels[1];
     const variantKey = (isInverted ? 'I' : 'S') + (isT ? 'T' : 'A');
     const epithet = (MBTI_TITLES[typeStr] || {})[variantKey] || "未知なる者";
 
+    const stackStatus = getStackStatus(levels);
+
     const url = `${window.location.origin}${window.location.pathname}?d=${encodeURIComponent(encodeState())}`;
-    const text = `わたしのタイプは${nickname}「${epithet}」\n\n結果をチェック：\n${url}\n#MBTI_5D`;
+    const text = `わたしのタイプは${nickname}「${epithet}」\n${stackStatus.name}のスタックです\n\n結果をチェック：\n${url}\n#MBTI_5D`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
 }
 function copyURL() {
