@@ -48,7 +48,7 @@ export function updateNarration(state, totalComplements) {
     if (state.viewMode === 'compatibility') {
         const t = state.timeline.elapsed;
         const intervals = UI_CONFIG.NARRATION_INTERVALS;
-        
+
         // Phase logic
         let phase = 'INTRO';
         if (t > intervals.OVERVIEW) phase = 'OVERVIEW';
@@ -67,18 +67,18 @@ export function updateNarration(state, totalComplements) {
         const stack = state.stacks[target];
         const levels = state.levels[target];
         const typeStr = state[target === 'A' ? 'typeA' : 'typeB'].split('-')[0];
-        
+
         // Safety check for missing stack
         if (!stack || !levels || stack.length < 4 || levels.length < 4) {
             return null;
         }
 
-        const cycleInterval = 4; // 4 seconds per block
+        const cycleInterval = 6; // 6 seconds per block
         const elapsed = state.timeline.elapsed;
-        const functionDuration = cycleInterval * 4; // 16s
-        const summaryDuration = 4; // 4s for stack summary
-        const preTitleDuration = 4; // 4s (increased from 2s)
-        const totalDuration = functionDuration + summaryDuration + preTitleDuration + 10; // Total 34s
+        const functionDuration = cycleInterval * 4; // 24s
+        const summaryDuration = 10; // 10s for stack summary
+        const preTitleDuration = 2; // 2s
+        const totalDuration = functionDuration + summaryDuration + preTitleDuration + 10; // Total 46s
 
         // Stop after one full cycle
         if (elapsed >= totalDuration) {
