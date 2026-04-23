@@ -232,7 +232,7 @@ function updateScoreUI() {
 
     // Complement
     let baseCompScore = Math.min(100, Math.round(Math.min(100, state.complementData.rescueScoreRaw) * (1 + state.complementData.mirrorFactor)));
-    let compScore = Math.min(100, baseCompScore + (state.complementData.atModifier || 0));
+    let compScore = Math.max(0, Math.min(100, baseCompScore + (state.complementData.atModifier || 0)));
     const compScoreEl = document.getElementById('comp-score-display');
     if (compScoreEl) compScoreEl.textContent = compScore;
 
