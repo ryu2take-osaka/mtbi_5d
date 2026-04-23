@@ -241,20 +241,6 @@ function updateScoreUI() {
         else compBox.classList.remove('mirror-active');
     }
 
-    // A-T Modifier UI
-    const atMod = state.complementData.atModifier || 0;
-    const atInfoEl = document.getElementById('at-modifier-info');
-    if (atInfoEl) {
-        if (atMod > 0) {
-            let label = "安定寄り";
-            if (atMod >= 8) label = "高出力共鳴型";
-            else if (atMod >= 4) label = "刺激成長型";
-            atInfoEl.textContent = `A-T補正：+${atMod}（${label}）`;
-        } else {
-            atInfoEl.textContent = "";
-        }
-    }
-
     // Ranks
     updateRank('rank-display', score);
     updateRank('comp-rank-display', compScore);
