@@ -1,8 +1,9 @@
 /**
  * Narration and Timeline Control
  */
-import { FUNCTION_DESCRIPTIONS, MBTI_TITLES, MBTI_NICKNAMES } from './data.js';
+import { FUNCTION_DESCRIPTIONS, MBTI_TITLES, MBTI_NICKNAMES, MBTI_RESONANCE_CODES } from './data.js';
 import { LV_BAND, UI_CONFIG } from './config.js';
+import { getRank } from './score.js';
 
 export function getStackStatus(lv) {
     const [f1, f2, f3, f4] = lv;
@@ -143,9 +144,16 @@ export function updateNarration(state, totalComplements) {
 }
 
 function getCompatibilityText(phase, state, complements) {
-    const rank = document.getElementById('rank-display').textContent;
+    const simScore = state.complementData.similarityScore || 0;
+    const baseCompScore = Math.min(100, Math.round(Math.min(100, state.complementData.rescueScoreRaw) * (1 + state.complementData.mirrorFactor)));
+    const compScore = Math.min(100, baseCompScore + (state.complementData.atModifier || 0));
+    
+    const simRank = getRank(simScore);
+    const compRank = getRank(compScore);
+    const resonance = MBTI_RESONANCE_CODES[compRank + simRank] || MBTI_RESONANCE_CODES['DD'];
+
     switch (phase) {
-        case 'INTRO': return `あなたたちは「${rank}ランク」の関係です。<br>エネルギーの巡りを解析します。`;
+        case 'INTRO': return `あなたたちの共鳴解析を開始します。<br>エネルギーの巡りを可視化しています。`;
         case 'CORE':
             if (complements.length > 0) {
                 const c = complements[0];
@@ -156,7 +164,7 @@ function getCompatibilityText(phase, state, complements) {
         case 'SUB':
             return complements.length > 1 ? `複数の補助的な補完が関係を支えています。` : `静かに響き合うパートナーシップです。`;
         case 'DIFF': return `ズレによる摩擦には少しの注意が必要です。`;
-        case 'OVERVIEW': return `評価結果：${rank}評価のパートナー性能。<br>共に進化し続ける関係です。`;
+        case 'OVERVIEW': return `診断結果：<strong>${resonance.title}</strong><br><span style="font-size: 0.85em; opacity: 0.9;">${resonance.desc}</span>`;
         default: return '';
     }
 }

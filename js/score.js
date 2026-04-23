@@ -89,3 +89,11 @@ export function calculateComplements(users, state) {
 
     return result;
 }
+
+export function getRank(score) {
+    if (score >= 80) return 'S';
+    if (score >= 60) return 'A';
+    if (score >= 40) return 'B';
+    if (score >= 20) return 'C';
+    return 'D';
+}

@@ -3,8 +3,8 @@
  */
 import * as THREE from 'three';
 import { initThree, updateVisuals, drawBeams, clearBeams } from './render.js';
-import { calculateComplements, getMBTITypeString, getFunctionLevels } from './score.js';
-import { MBTI_FUNCTION_STACKS, MBTI_NICKNAMES, MBTI_TITLES } from './data.js';
+import { calculateComplements, getMBTITypeString, getFunctionLevels, getRank } from './score.js';
+import { MBTI_FUNCTION_STACKS, MBTI_NICKNAMES, MBTI_TITLES, MBTI_RESONANCE_CODES } from './data.js';
 import { updateNarration, getStackStatus } from './narration.js';
 import { UI_CONFIG } from './config.js';
 
@@ -227,6 +227,7 @@ function updateScoreUI() {
         score = Math.max(0, Math.min(100, (1.0 - (dist / 3.0)) * 100));
     }
     const scoreEl = document.getElementById('score-display');
+    state.complementData.similarityScore = score;
     if (scoreEl) scoreEl.textContent = Math.round(score);
 
     // Complement
@@ -235,13 +236,18 @@ function updateScoreUI() {
     const compScoreEl = document.getElementById('comp-score-display');
     if (compScoreEl) compScoreEl.textContent = compScore;
 
-    const compBox = document.getElementById('comp-score-box');
-    if (compBox) {
-        if (state.complementData.mirrorFactor > 0) compBox.classList.add('mirror-active');
-        else compBox.classList.remove('mirror-active');
-    }
+    // Resonance Code Lookup
+    const simRank = getRank(score);
+    const compRank = getRank(compScore);
+    const code = compRank + simRank; // 1st char is Complement, 2nd is Similarity
+    const resonance = MBTI_RESONANCE_CODES[code] || MBTI_RESONANCE_CODES['DD'];
 
-    // Ranks
+    const titleEl = document.getElementById('resonance-title');
+    const descEl = document.getElementById('resonance-desc');
+    if (titleEl) titleEl.textContent = resonance.title;
+    if (descEl) descEl.textContent = resonance.desc;
+
+    // Ranks (Hidden now, but we update for logic consistency)
     updateRank('rank-display', score);
     updateRank('comp-rank-display', compScore);
 
@@ -355,7 +361,16 @@ function shareToX() {
     const stackStatus = getStackStatus(levels);
 
     const url = `${window.location.origin}${window.location.pathname}?d=${encodeURIComponent(encodeState())}`;
-    const text = `わたしのタイプは${nickname}「${epithet}」\n${stackStatus.name}のスタックです\n\n結果をチェック：\n${url}\n#MBTI_5D`;
+    
+    // Get Resonance info for sharing
+    const simScore = state.complementData.similarityScore || 0;
+    const simRank = getRank(simScore);
+    const baseCompScore = Math.min(100, Math.round(Math.min(100, state.complementData.rescueScoreRaw) * (1 + state.complementData.mirrorFactor)));
+    const compScore = Math.min(100, baseCompScore + (state.complementData.atModifier || 0));
+    const compRank = getRank(compScore);
+    const resonance = MBTI_RESONANCE_CODES[compRank + simRank] || { title: "" };
+
+    const text = `わたしのタイプは${nickname}「${epithet}」\n${stackStatus.name}のスタックです\n\n二人の診断結果：${resonance.title}\n${url}\n#MBTI_5D`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
 }
 function copyURL() {
