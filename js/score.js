@@ -84,6 +84,7 @@ export function calculateComplements(users, state) {
         }
     }
     result.mirrorFactor = Math.min(SCORE_CONFIG.MIRROR.cap, factors.reduce((a, b) => a + b, 0));
+    result.atModifier = Math.round((users.A.AT + users.B.AT) / 20);
     result.data.sort((a, b) => b.s - a.s);
 
     return result;

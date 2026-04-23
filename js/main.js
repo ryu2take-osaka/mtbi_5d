@@ -230,7 +230,8 @@ function updateScoreUI() {
     if (scoreEl) scoreEl.textContent = Math.round(score);
 
     // Complement
-    let compScore = Math.min(100, Math.round(Math.min(100, state.complementData.rescueScoreRaw) * (1 + state.complementData.mirrorFactor)));
+    let baseCompScore = Math.min(100, Math.round(Math.min(100, state.complementData.rescueScoreRaw) * (1 + state.complementData.mirrorFactor)));
+    let compScore = Math.min(100, baseCompScore + (state.complementData.atModifier || 0));
     const compScoreEl = document.getElementById('comp-score-display');
     if (compScoreEl) compScoreEl.textContent = compScore;
 
@@ -238,6 +239,20 @@ function updateScoreUI() {
     if (compBox) {
         if (state.complementData.mirrorFactor > 0) compBox.classList.add('mirror-active');
         else compBox.classList.remove('mirror-active');
+    }
+
+    // A-T Modifier UI
+    const atMod = state.complementData.atModifier || 0;
+    const atInfoEl = document.getElementById('at-modifier-info');
+    if (atInfoEl) {
+        if (atMod > 0) {
+            let label = "安定寄り";
+            if (atMod >= 8) label = "高出力共鳴型";
+            else if (atMod >= 4) label = "刺激成長型";
+            atInfoEl.textContent = `A-T補正：+${atMod}（${label}）`;
+        } else {
+            atInfoEl.textContent = "";
+        }
     }
 
     // Ranks
