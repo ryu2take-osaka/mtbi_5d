@@ -5,20 +5,37 @@ import { FUNCTION_DESCRIPTIONS, MBTI_TITLES, MBTI_NICKNAMES, MBTI_RESONANCE_CODE
 import { LV_BAND, UI_CONFIG } from './config.js';
 import { getRank } from './score.js';
 
+/**
+ * Determines the balance type of the function stack (Expanded, Inverted, etc.)
+ * @param {number[]} lv - 4 function levels
+ * @returns {Object} {key: string, name: string}
+ */
 export function getStackStatus(lv) {
     const [f1, f2, f3, f4] = lv;
-    if (f4 >= f2 * 0.75 && f4 >= 20) return { key: 'expanded', name: '拡張型' };
+    if (f4 >= 10) return { key: 'expanded', name: '拡張型' };
     if (f3 > f2 + 5) return { key: 'inverted', name: '反転型' };
     if (Math.abs(f2 - f3) <= 5) return { key: 'tilted', name: '傾斜型' };
     return { key: 'balanced', name: '均衡型' };
 }
 
+/**
+ * Classifies a function level into HIGH, MID, or LOW band
+ * @param {number} lv - Function level (0-100)
+ * @returns {string} HIGH, MID, or LOW
+ */
 export function getLvBand(lv) {
     if (lv >= LV_BAND.HIGH) return 'HIGH';
     if (lv >= LV_BAND.MID) return 'MID';
     return 'LOW';
 }
 
+/**
+ * Builds HTML text for a single cognitive function description
+ * @param {string} func - Function code (e.g. 'Ni')
+ * @param {number} lv - Function level
+ * @param {number} attitudeScore - A/T slider value
+ * @returns {string} HTML content
+ */
 export function buildFunctionText(func, lv, attitudeScore) {
     const meta = FUNCTION_DESCRIPTIONS[func];
     if (!meta) return '';
@@ -31,6 +48,13 @@ ${meta.base}<br>
 <span style="font-size: 0.9em; opacity: 0.8;">${meta.tone[attitude]}</span>`;
 }
 
+/**
+ * Builds a summary text for the entire function stack balance
+ * @param {number[]} lv - 4 function levels
+ * @param {string[]} stack - 4 function codes
+ * @param {boolean} isIntrovert - Whether the user is an introvert
+ * @returns {string} Descriptive text
+ */
 export function buildStackSummary(lv, stack, isIntrovert) {
     const [f1, f2, f3, f4] = lv;
     const names = stack.map(f => FUNCTION_DESCRIPTIONS[f].name);
@@ -38,7 +62,7 @@ export function buildStackSummary(lv, stack, isIntrovert) {
     const intro = f1 >= 50 ? `主機能【${names[0]}】が極めて安定しており、` : `主機能【${names[0]}】を軸としながら、`;
 
     // 1. Expanded (拡張型)
-    if (f4 >= f2 * 0.75 && f4 >= 20) {
+    if (f4 >= 10) {
         return intro + `使い慣れた領域を保ちつつ、未踏の可能性を秘めた劣等機能【${names[3]}】に確かな活性が宿っています。自己の限界を超え、新たなステージへ踏み出そうとする「拡張型」の変革期にあります。`;
     }
     // 2. Inverted (反転型)
@@ -52,6 +76,12 @@ export function buildStackSummary(lv, stack, isIntrovert) {
     return intro + `【${getStackStatus(lv).name}】の精神構造です。`;
 }
 
+/**
+ * Orchestrates the narration sequence based on the timeline
+ * @param {Object} state - Current global state
+ * @param {Object[]} totalComplements - List of calculated complement details
+ * @returns {Object|null} {phase: string, text: string} or null if no update needed
+ */
 export function updateNarration(state, totalComplements) {
     if (state.viewMode === 'compatibility') {
         const t = state.timeline.elapsed;
@@ -143,11 +173,15 @@ export function updateNarration(state, totalComplements) {
     return null;
 }
 
+/**
+ * Builds the compatibility narration text based on phase
+ * @private
+ */
 function getCompatibilityText(phase, state, complements) {
     const simScore = state.complementData.similarityScore || 0;
     const baseCompScore = Math.min(100, Math.round(Math.min(100, state.complementData.rescueScoreRaw) * (1 + state.complementData.mirrorFactor)));
     const compScore = Math.min(100, baseCompScore + (state.complementData.atModifier || 0));
-    
+
     const simRank = getRank(simScore);
     const compRank = getRank(compScore);
     const suffix = (state.complementData.atModifier >= 0) ? '+' : '-';

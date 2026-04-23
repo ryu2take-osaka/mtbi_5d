@@ -4,6 +4,11 @@
 import { SCORE_CONFIG } from './config.js';
 import { MBTI_FUNCTION_STACKS } from './data.js';
 
+/**
+ * Generates the 4-letter + A/T type string from raw slider data
+ * @param {Object} data - Raw slider values (0-100)
+ * @returns {string} e.g. "INTP-T"
+ */
 export function getMBTITypeString(data) {
     if (data.EI === 50 && data.NS === 50 && data.TF === 50 && data.JP === 50 && data.AT === 50) return "XXXX-X";
     const e = data.EI < 50 ? 'E' : (data.EI > 50 ? 'I' : 'X');
@@ -14,6 +19,12 @@ export function getMBTITypeString(data) {
     return `${e}${n}${t}${j}-${a}`;
 }
 
+/**
+ * Calculates levels (0-100) for each of the 4 functions in the stack
+ * @param {Object} data - User slider data
+ * @param {string[]} stack - 4 functional codes (e.g. ['Ti', 'Ne', ...])
+ * @returns {number[]} 4 levels
+ */
 export function getFunctionLevels(data, stack) {
     if (!stack) return [0, 0, 0, 0];
     const posWeight = [1.0, 0.75, 0.5, 0.25];
@@ -31,6 +42,12 @@ export function getFunctionLevels(data, stack) {
     });
 }
 
+/**
+ * Main compatibility engine. Calculates rescue scores and mirror factors.
+ * @param {Object} users - {A: userData, B: userData}
+ * @param {Object} state - Current global state
+ * @returns {Object} {data: details[], mirrorFactor: number, rescueScoreRaw: number, atModifier: number}
+ */
 export function calculateComplements(users, state) {
     const typeA = getMBTITypeString(users.A);
     const typeB = getMBTITypeString(users.B);
@@ -90,6 +107,11 @@ export function calculateComplements(users, state) {
     return result;
 }
 
+/**
+ * Maps a numerical score to a rank letter
+ * @param {number} score - 0-100
+ * @returns {string} S, A, B, C, or D
+ */
 export function getRank(score) {
     if (score >= 80) return 'S';
     if (score >= 60) return 'A';

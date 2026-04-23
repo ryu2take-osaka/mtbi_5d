@@ -8,6 +8,10 @@ import { MBTI_FUNCTION_STACKS, MBTI_NICKNAMES, MBTI_TITLES, MBTI_RESONANCE_CODES
 import { updateNarration, getStackStatus } from './narration.js';
 import { UI_CONFIG } from './config.js';
 
+/**
+ * Main Application State
+ * @type {Object}
+ */
 const state = {
     activeUser: 'A',
     viewMode: 'compatibility', // compatibility, self, other
@@ -31,6 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
+/**
+ * Initializes the application, decodes URL params, and starts loops
+ */
 function initApp() {
     const container = document.getElementById('canvas-container');
     three = initThree(container);
@@ -71,6 +78,9 @@ function initApp() {
     animate();
 }
 
+/**
+ * Renders tick marks for sliders
+ */
 function initTicks() {
     const keys = ['EI', 'NS', 'TF', 'JP', 'AT'];
     keys.forEach(key => {
@@ -83,6 +93,9 @@ function initTicks() {
     });
 }
 
+/**
+ * Binds UI events to logic
+ */
 function setupEventListeners() {
     // Tabs
     document.querySelectorAll('.tab').forEach(tab => {
@@ -146,6 +159,9 @@ function setupEventListeners() {
     // We'll use the tab click handler for SCORE analysis
 }
 
+/**
+ * Triggers the analysis overlay and logic
+ */
 function startAnalysis() {
     state.mode = 'ANALYZING';
     document.getElementById('analysis-overlay').style.display = 'flex';
@@ -158,6 +174,10 @@ function startAnalysis() {
     }, UI_CONFIG.ANALYSIS_TIME);
 }
 
+/**
+ * Switches between narration modes
+ * @param {string} mode - compatibility, self, or other
+ */
 function setViewMode(mode) {
     state.viewMode = mode;
     state.timeline.elapsed = 0;
@@ -174,6 +194,9 @@ function setViewMode(mode) {
     refreshAllData();
 }
 
+/**
+ * Resets the idle timer on interaction
+ */
 function onInteraction() {
     state.mode = 'EDITING';
     state.lastInteraction = performance.now();
@@ -182,6 +205,9 @@ function onInteraction() {
     refreshMainUI();
 }
 
+/**
+ * Updates sliders and labels to match current state
+ */
 function refreshMainUI() {
     const data = state.users[state.activeUser];
     const keys = ['EI', 'NS', 'TF', 'JP', 'AT'];
@@ -195,6 +221,10 @@ function refreshMainUI() {
     refreshAllData();
 }
 
+/**
+ * Updates text labels for the 5 axes
+ * @private
+ */
 function updateLabel(key, val) {
     const texts = { EI:['外向型','内向型'], NS:['直感型','現実型'], TF:['思考型','感情型'], JP:['計画型','探索型'], AT:['自己主張型','激動型'] };
     const l = document.getElementById(`lbl-${key}-L`);
@@ -205,6 +235,9 @@ function updateLabel(key, val) {
     else { l.textContent = texts[key][0]; r.textContent = texts[key][1]; }
 }
 
+/**
+ * Re-calculates all scores and updates visuals
+ */
 function refreshAllData() {
     state.typeA = getMBTITypeString(state.users.A);
     state.typeB = getMBTITypeString(state.users.B);
@@ -218,6 +251,9 @@ function refreshAllData() {
     updateScoreUI();
 }
 
+/**
+ * Updates the numerical score UI elements and Resonance Code
+ */
 function updateScoreUI() {
     // Distance
     const spheres = three.scene.children.filter(c => c.geometry && c.geometry.type === 'SphereGeometry');
@@ -273,6 +309,10 @@ function updateScoreUI() {
     }
 }
 
+/**
+ * Updates a rank badge element
+ * @private
+ */
 function updateRank(id, score) {
     const el = document.getElementById(id);
     let rank = 'D', col = '#e74c3c';
@@ -284,6 +324,9 @@ function updateRank(id, score) {
 }
 
 const clock = new THREE.Clock();
+/**
+ * Main animation frame loop
+ */
 function animate() {
     requestAnimationFrame(animate);
     const delta = clock.getDelta();
@@ -328,9 +371,16 @@ function animate() {
     three.composer.render();
 }
 
+/**
+ * Checks if a user data object is at default values
+ * @private
+ */
 function isAllFifty(u) { return u.EI === 50 && u.NS === 50 && u.TF === 50 && u.JP === 50 && u.AT === 50; }
 
-// Utils
+/**
+ * Decodes state from a Base64 string
+ * @param {string} b64 
+ */
 function decodeState(b64) {
     try {
         const str = atob(b64); if (str.length !== 10) return;
@@ -340,12 +390,21 @@ function decodeState(b64) {
         keys.forEach((k, i) => { state.users.A[k] = arr[i]; state.users.B[k] = arr[i+5]; });
     } catch(e) {}
 }
+
+/**
+ * Encodes current state to a Base64 string
+ * @returns {string}
+ */
 function encodeState() {
     const keys = ['EI', 'NS', 'TF', 'JP', 'AT'];
     const arr = new Uint8Array(10);
     keys.forEach((k, i) => { arr[i] = state.users.A[k]; arr[i+5] = state.users.B[k]; });
     return btoa(String.fromCharCode.apply(null, arr));
 }
+
+/**
+ * Opens X (Twitter) share intent
+ */
 function shareToX() {
     const target = 'A'; // Always share User A as "My type"
     const u = state.users[target];
@@ -374,6 +433,10 @@ function shareToX() {
     const text = `わたしのタイプは${nickname}「${epithet}」\n${stackStatus.name}のスタックです\n\n二人の診断結果：${resonance.title}\n${url}\n#MBTI_5D`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
 }
+
+/**
+ * Copies the shareable URL to clipboard
+ */
 function copyURL() {
     const url = `${window.location.origin}${window.location.pathname}?d=${encodeURIComponent(encodeState())}`;
     navigator.clipboard.writeText(url).then(() => {

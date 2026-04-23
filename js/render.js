@@ -18,6 +18,11 @@ let gFloor, gLeft, gBack;
 const SCALE = UI_CONFIG.SCALE;
 const BOX_SIZE = SCALE * 2;
 
+/**
+ * Initializes the Three.js scene, camera, and renderer
+ * @param {HTMLElement} container - The container to append the renderer to
+ * @returns {Object} Three.js components
+ */
 export function initThree(container) {
     scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x050510, 0.05);
@@ -46,6 +51,10 @@ export function initThree(container) {
     return { scene, camera, renderer, composer, controls };
 }
 
+/**
+ * Internal post-processing setup (Bloom)
+ * @private
+ */
 function initPostProcessing(container) {
     composer = new EffectComposer(renderer);
     const renderScene = new RenderPass(scene, camera);
@@ -58,6 +67,10 @@ function initPostProcessing(container) {
     composer.addPass(bloomPass);
 }
 
+/**
+ * Creates 3D objects and grids
+ * @private
+ */
 function initObjects() {
     // Grids
     const gridColorLine = 0x555566;
@@ -102,6 +115,10 @@ function initObjects() {
     guidesB = createGuideLines();
 }
 
+/**
+ * Creates projection guide lines for a sphere
+ * @private
+ */
 function createGuideLines() {
     const matX = new THREE.LineDashedMaterial({ color: 0xE4AE3A, transparent: true, opacity: 0.6, dashSize: 0.2, gapSize: 0.1 });
     const matY = new THREE.LineDashedMaterial({ color: 0x33A474, transparent: true, opacity: 0.6, dashSize: 0.2, gapSize: 0.1 });
@@ -113,6 +130,10 @@ function createGuideLines() {
     return { x: gX, y: gY, z: gZ };
 }
 
+/**
+ * Setup basic lighting
+ * @private
+ */
 function initLights() {
     scene.add(new THREE.AmbientLight(0xffffff, 0.2));
     const dl = new THREE.DirectionalLight(0xffffff, 0.5);
@@ -120,6 +141,10 @@ function initLights() {
     scene.add(dl);
 }
 
+/**
+ * Handles window resize events
+ * @private
+ */
 function onWindowResize(container) {
     const w = container.clientWidth;
     const h = container.clientHeight;
@@ -129,8 +154,10 @@ function onWindowResize(container) {
     composer.setSize(w, h);
 }
 
-// --- Update Functions ---
-
+/**
+ * Main update loop for visual elements
+ * @param {Object} state - Current global state
+ */
 export function updateVisuals(state) {
     const uA = state.users.A;
     const uB = state.users.B;
@@ -194,6 +221,10 @@ export function updateVisuals(state) {
     });
 }
 
+/**
+ * Updates the guide lines' start and end points
+ * @private
+ */
 function updateGuidesVisibility(g, pos, visible) {
     g.x.visible = g.y.visible = g.z.visible = visible;
     if (!visible) return;
@@ -205,6 +236,10 @@ function updateGuidesVisibility(g, pos, visible) {
 
 const funcColors = { 'N': '#E4AE3A', 'S': '#33A474', 'T': '#4298B4', 'F': '#E46562' };
 
+/**
+ * Updates the function stack nodes in the UI panel
+ * @private
+ */
 function updateStackNodes(prefix, stack, user, state) {
     const levels = getFunctionLevels(user, stack);
     for (let i = 0; i < 4; i++) {
@@ -245,6 +280,10 @@ function updateStackNodes(prefix, stack, user, state) {
     }
 }
 
+/**
+ * Determines the representative color of an MBTI type group
+ * @private
+ */
 function getGroupColor(u) {
     const isN = u.NS < 50; const isT = u.TF < 50; const isJ = u.JP < 50;
     if (isN && isT) return new THREE.Color('#bf5af2');
@@ -254,10 +293,24 @@ function getGroupColor(u) {
     return new THREE.Color('#ffffff');
 }
 
+/**
+ * Checks if a user data object is at default values
+ * @private
+ */
 function isAllFifty(u) { return u.EI === 50 && u.NS === 50 && u.TF === 50 && u.JP === 50 && u.AT === 50; }
 
+/**
+ * Clears all beam effects from the scene
+ */
 export function clearBeams() { beamsGroup.clear(); }
 
+/**
+ * Draws energy beams between users to represent functional compatibility
+ * @param {Object[]} compData - Compatibility details
+ * @param {string} phase - Current narration phase
+ * @param {THREE.Vector3} posA - User A position
+ * @param {THREE.Vector3} posB - User B position
+ */
 export function drawBeams(compData, phase, posA, posB) {
     beamsGroup.clear();
     let bCount = 0;

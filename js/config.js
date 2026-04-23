@@ -1,5 +1,6 @@
 /**
- * MBTI 5D Visualizer Configuration
+ * Scoring weights for complementary calculation
+ * @type {Object}
  */
 export const SCORE_CONFIG = {
     FULL: 40,
@@ -12,11 +13,19 @@ export const SCORE_CONFIG = {
     }
 };
 
+/**
+ * Thresholds for function level classification
+ * @type {Object}
+ */
 export const LV_BAND = {
     HIGH: 70,
     MID: 40
 };
 
+/**
+ * UI and Animation parameters
+ * @type {Object}
+ */
 export const UI_CONFIG = {
     SCALE: 4.0,
     ANALYSIS_TIME: 1200,

@@ -1,6 +1,10 @@
 /**
  * MBTI Data and Functional Descriptions
  */
+/**
+ * Japanese nicknames for each MBTI type
+ * @type {Object<string, string>}
+ */
 export const MBTI_NICKNAMES = {
     'INTJ': '建築家', 'INTP': '論理学者', 'ENTJ': '指揮官', 'ENTP': '討論者',
     'INFJ': '提唱者', 'INFP': '仲介者', 'ENFJ': '主人公', 'ENFP': '運動家',
@@ -8,6 +12,10 @@ export const MBTI_NICKNAMES = {
     'ISTP': '巨匠', 'ISFP': '冒険家', 'ESTP': '起業家', 'ESFP': 'エンターテイナー'
 };
 
+/**
+ * Cognitive function stacks for each MBTI type (Harold Grant model)
+ * @type {Object<string, string[]>}
+ */
 export const MBTI_FUNCTION_STACKS = {
     'INTJ': ['Ni', 'Te', 'Fi', 'Se'],
     'INTP': ['Ti', 'Ne', 'Si', 'Fe'],
@@ -27,6 +35,10 @@ export const MBTI_FUNCTION_STACKS = {
     'ESFP': ['Se', 'Fi', 'Te', 'Ni']
 };
 
+/**
+ * Descriptions for each cognitive function
+ * @type {Object<string, Object>}
+ */
 export const FUNCTION_DESCRIPTIONS = {
     'Ni': {
         name: "内向的直観",
@@ -77,6 +89,11 @@ export const FUNCTION_DESCRIPTIONS = {
         tone: { A: "温かく円滑なコミュニケーションを保てます", T: "周りに合わせすぎて疲れを感じることがあります" }
     }
 };
+
+/**
+ * Personality titles (Epithets) based on Type, A/T, and Stack balance
+ * @type {Object<string, Object<string, string>>}
+ */
 export const MBTI_TITLES = {
     'INTP': { SA: "知的開拓者", ST: "思索的探求者", IA: "普遍を説きたる者", IT: "孤高なる者" },
     'ENTP': { SA: "思想変革者", ST: "変幻自在の策士", IA: "伝統を壊したる者", IT: "混沌を編む者" },
@@ -96,6 +113,10 @@ export const MBTI_TITLES = {
     'ESFP': { SA: "歓喜の体現者", ST: "情熱の演者", IA: "喜びを広げたる者", IT: "感情を揺らす者" }
 };
 
+/**
+ * 50 Resonance Codes for compatibility results (including A-T drift variations)
+ * @type {Object<string, {title: string, desc: string}>}
+ */
 export const MBTI_RESONANCE_CODES = {
     'SS+': { title: "至高の相互昇華", desc: "お互いを高め合う意志が、本来の相性を超えて奇跡を起こす。" },
     'SS-': { title: "至高の静謐同期", desc: "最強の相性を持ちながら、互いの孤独を尊重し合う高潔な二人。" },

@@ -136,7 +136,7 @@ MBTIの5指標（E-I, S-N, T-F, J-P, A-T）を、3次元空間および「認知
 
 機能LVを `f1,f2,f3,f4` とする。
 
-* **expanded**: `f4 >= f2 × 0.75 && f4 >= 20`
+* **expanded**: `f4 >= 10`
 * **inverted**: `f3 > f2 + 5`
 * **tilted**: `|f2-f3| <= 5`
 * **balanced**: その他
