@@ -239,8 +239,8 @@ function updateScoreUI() {
     // Resonance Code Lookup
     const simRank = getRank(score);
     const compRank = getRank(compScore);
-    const code = compRank + simRank; // 1st char is Complement, 2nd is Similarity
-    const resonance = MBTI_RESONANCE_CODES[code] || MBTI_RESONANCE_CODES['DD'];
+    const suffix = (state.complementData.atModifier >= 0) ? '+' : '-';
+    const resonance = MBTI_RESONANCE_CODES[compRank + simRank + suffix] || MBTI_RESONANCE_CODES['DD-'];
 
     const titleEl = document.getElementById('resonance-title');
     const descEl = document.getElementById('resonance-desc');
@@ -368,7 +368,8 @@ function shareToX() {
     const baseCompScore = Math.min(100, Math.round(Math.min(100, state.complementData.rescueScoreRaw) * (1 + state.complementData.mirrorFactor)));
     const compScore = Math.min(100, baseCompScore + (state.complementData.atModifier || 0));
     const compRank = getRank(compScore);
-    const resonance = MBTI_RESONANCE_CODES[compRank + simRank] || { title: "" };
+    const suffix = (state.complementData.atModifier >= 0) ? '+' : '-';
+    const resonance = MBTI_RESONANCE_CODES[compRank + simRank + suffix] || { title: "" };
 
     const text = `わたしのタイプは${nickname}「${epithet}」\n${stackStatus.name}のスタックです\n\n二人の診断結果：${resonance.title}\n${url}\n#MBTI_5D`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');

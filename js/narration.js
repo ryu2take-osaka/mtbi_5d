@@ -150,7 +150,8 @@ function getCompatibilityText(phase, state, complements) {
     
     const simRank = getRank(simScore);
     const compRank = getRank(compScore);
-    const resonance = MBTI_RESONANCE_CODES[compRank + simRank] || MBTI_RESONANCE_CODES['DD'];
+    const suffix = (state.complementData.atModifier >= 0) ? '+' : '-';
+    const resonance = MBTI_RESONANCE_CODES[compRank + simRank + suffix] || MBTI_RESONANCE_CODES['DD-'];
 
     switch (phase) {
         case 'INTRO': return `あなたたちの共鳴解析を開始します。<br>エネルギーの巡りを可視化しています。`;
